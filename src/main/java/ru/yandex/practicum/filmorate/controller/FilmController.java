@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.FilmConfig;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmService;
 import ru.yandex.practicum.filmorate.model.ValidationException;
@@ -15,14 +18,17 @@ import java.util.List;
 @Slf4j
 @Getter
 public class FilmController {
-    private final FilmService filmService = new FilmService();
+
+    private final ApplicationContext context = new AnnotationConfigApplicationContext(FilmConfig.class);
+    private final FilmService filmService = context.getBean("filmService", FilmService.class);
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
     @GetMapping("/films")
-    public List<Film> findAll() {
+    public List<Film> findAllUsers() {
+        List<Film> films = filmService.getFilms();
         log.info("Request received!");
-        log.info("Current number of films: {}", filmService.getFilms().size());
-        return filmService.getFilms();
+        log.info("Current number of films: {}", films.size());
+        return films;
     }
 
     @PostMapping(value = "/films")

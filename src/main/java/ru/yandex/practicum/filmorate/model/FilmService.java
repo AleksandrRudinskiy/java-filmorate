@@ -1,9 +1,15 @@
 package ru.yandex.practicum.filmorate.model;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 public class FilmService {
     private final Map<Integer, Film> films = new HashMap<>();

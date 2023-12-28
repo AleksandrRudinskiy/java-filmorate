@@ -1,7 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.UserConfig;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.UserService;
 import ru.yandex.practicum.filmorate.model.ValidationException;
@@ -13,12 +16,14 @@ import java.util.List;
 @RestController
 @Slf4j
 public class UserController {
-    private final UserService userService = new UserService();
+    private final ApplicationContext context = new AnnotationConfigApplicationContext(UserConfig.class);
+    private final UserService userService = context.getBean("userService", UserService.class);
 
     @GetMapping("/users")
-    public List<User> findAll() {
-        log.debug("Текущее количество пользователей: {}", userService.getUsers().size());
-        return userService.getUsers();
+    public List<User> findAllUsers() {
+        List<User> users = userService.getUsers();
+        log.debug("Current number of users: {}", users.size());
+        return users;
     }
 
     @PostMapping(value = "/users")

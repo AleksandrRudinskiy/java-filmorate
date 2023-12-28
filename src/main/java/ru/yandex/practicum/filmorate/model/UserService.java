@@ -25,14 +25,7 @@ public class UserService {
     }
 
     public boolean isAlreadyExists(User user) {
-        boolean flag = false;
-        for (User item : users.values()) {
-            if (user.getId() == item.getId()) {
-                flag = true;
-                break;
-            }
-        }
-        return flag;
+        return users.containsKey(user.getId());
     }
 
     public List<User> getUsers() {
