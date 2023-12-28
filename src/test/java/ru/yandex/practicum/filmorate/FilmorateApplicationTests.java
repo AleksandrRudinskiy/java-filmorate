@@ -26,7 +26,7 @@ class FilmorateApplicationTests {
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(100)
                 .build();
-        filmController.create(film);
+        filmController.createFilm(film);
         assertEquals(1, filmController.getFilmService().getFilms().size(), "Film not created");
     }
 
@@ -39,7 +39,7 @@ class FilmorateApplicationTests {
                 .build();
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> filmController.create(film));
+                () -> filmController.createFilm(film));
         assertEquals("The name is empty", exception.getMessage());
     }
 
@@ -58,7 +58,7 @@ class FilmorateApplicationTests {
                 .build();
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> filmController.create(film));
+                () -> filmController.createFilm(film));
         assertEquals("The description length more than 200 symbols", exception.getMessage());
     }
 
@@ -71,7 +71,7 @@ class FilmorateApplicationTests {
                 .build();
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> filmController.create(film));
+                () -> filmController.createFilm(film));
         assertEquals("Release date earlier than 28-12-1895", exception.getMessage());
     }
 
@@ -84,7 +84,7 @@ class FilmorateApplicationTests {
                 .build();
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> filmController.create(film));
+                () -> filmController.createFilm(film));
         assertEquals("Film duration is negative", exception.getMessage());
     }
 
@@ -98,7 +98,7 @@ class FilmorateApplicationTests {
                 .build();
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> userController.create(user));
+                () -> userController.createUser(user));
         assertEquals("E-mail is empty or not contains symbol \"@\"", exception.getMessage());
     }
 
@@ -112,7 +112,7 @@ class FilmorateApplicationTests {
                 .build();
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> userController.create(user));
+                () -> userController.createUser(user));
         assertEquals("Login is empty or contains a space", exception.getMessage());
     }
 
@@ -126,7 +126,7 @@ class FilmorateApplicationTests {
                 .build();
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> userController.create(user));
+                () -> userController.createUser(user));
         assertEquals("Date of birth cannot be in the future", exception.getMessage());
     }
 }
