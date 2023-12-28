@@ -2,10 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.FilmConfig;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmService;
 import ru.yandex.practicum.filmorate.model.ValidationException;
@@ -19,8 +16,7 @@ import java.util.List;
 @Getter
 public class FilmController {
 
-    private final ApplicationContext context = new AnnotationConfigApplicationContext(FilmConfig.class);
-    private final FilmService filmService = context.getBean("filmService", FilmService.class);
+    private final FilmService filmService = new FilmService();
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
     @GetMapping("/films")
@@ -42,18 +38,18 @@ public class FilmController {
     @PutMapping("/films")
     public Film updateFilm(@RequestBody Film film, HttpServletResponse response) {
         filmValidate(film);
+        log.info("Film is valid :" + film.getName());
         if (filmService.isAlreadyExists(film)) {
             response.setStatus(HttpServletResponse.SC_OK);
-            log.info("Film updated" + film.getName());
             return filmService.update(film);
         } else if (!filmService.isAlreadyExists(film) && (film.getId() != 0)) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return film;
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
-            log.info("Film created" + film.getName());
             return filmService.add(film);
         }
+
     }
 
     private void filmValidate(Film film) {

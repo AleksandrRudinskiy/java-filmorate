@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.UserConfig;
+
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.UserService;
 import ru.yandex.practicum.filmorate.model.ValidationException;
@@ -16,8 +16,8 @@ import java.util.List;
 @RestController
 @Slf4j
 public class UserController {
-    private final ApplicationContext context = new AnnotationConfigApplicationContext(UserConfig.class);
-    private final UserService userService = context.getBean("userService", UserService.class);
+
+    private final UserService userService = new UserService();
 
     @GetMapping("/users")
     public List<User> findAllUsers() {
