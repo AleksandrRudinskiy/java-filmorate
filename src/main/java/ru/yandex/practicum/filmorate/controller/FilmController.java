@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmService;
@@ -13,9 +12,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
+@Slf4j
 @Getter
 public class FilmController {
-    private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     private final FilmService filmService = new FilmService();
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
@@ -27,7 +26,7 @@ public class FilmController {
     }
 
     @PostMapping(value = "/films")
-    public Film create(@RequestBody Film film) {
+    public Film createFilm(@RequestBody Film film) {
         filmValidate(film);
         log.info("Film " + film.getName() + " added");
         filmService.add(film);
@@ -35,7 +34,7 @@ public class FilmController {
     }
 
     @PutMapping("/films")
-    public Film saveFilm(@RequestBody Film film, HttpServletResponse response) {
+    public Film updateFilm(@RequestBody Film film, HttpServletResponse response) {
         filmValidate(film);
         if (filmService.isAlreadyExists(film)) {
             response.setStatus(HttpServletResponse.SC_OK);

@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.UserService;
@@ -12,8 +11,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
+@Slf4j
 public class UserController {
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService userService = new UserService();
 
     @GetMapping("/users")
@@ -23,14 +22,14 @@ public class UserController {
     }
 
     @PostMapping(value = "/users")
-    public User create(@RequestBody User user) {
+    public User createUser(@RequestBody User user) {
         validateUser(user);
         userService.add(user);
         return user;
     }
 
     @PutMapping("/users")
-    public User saveUser(@RequestBody User user, HttpServletResponse response) {
+    public User updateUser(@RequestBody User user, HttpServletResponse response) {
         validateUser(user);
         if (userService.isAlreadyExists(user)) {
             response.setStatus(HttpServletResponse.SC_OK);

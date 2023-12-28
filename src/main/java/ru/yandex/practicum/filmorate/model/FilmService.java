@@ -23,14 +23,7 @@ public class FilmService {
     }
 
     public boolean isAlreadyExists(Film film) {
-        boolean flag = false;
-        for (Film item : films.values()) {
-            if (film.getId() == item.getId()) {
-                flag = true;
-                break;
-            }
-        }
-        return flag;
+        return films.containsKey(film.getId());
     }
 
     public Film update(Film film) {
