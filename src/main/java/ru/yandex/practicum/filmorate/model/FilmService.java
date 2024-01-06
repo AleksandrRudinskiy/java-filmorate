@@ -1,11 +1,20 @@
 package ru.yandex.practicum.filmorate.model;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class FilmService {
+
+@Autowired
+    public FilmService() {
+    }
+
     private final Map<Integer, Film> films = new HashMap<>();
     private int currentId = 1;
 

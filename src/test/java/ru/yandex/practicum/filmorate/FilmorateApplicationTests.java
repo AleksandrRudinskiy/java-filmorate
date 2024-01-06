@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
@@ -14,10 +15,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
+
 class FilmorateApplicationTests {
 
-    private final FilmController filmController = new FilmController();
-    private final UserController userController = new UserController();
+    private final FilmController filmController;
+   private final UserController userController;
+
+
+
+
+@Autowired
+    public FilmorateApplicationTests(FilmController filmController, UserController userController) {
+        this.filmController = filmController;
+        this.userController = userController;
+    }
 
     @Test
     void shouldCreateFilm() {

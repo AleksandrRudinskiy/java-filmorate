@@ -1,12 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.UserService;
 import ru.yandex.practicum.filmorate.model.ValidationException;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -14,24 +16,30 @@ import java.util.List;
 @Slf4j
 public class UserController {
 
-    private final UserService userService = new UserService();
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/users")
     public List<User> findAllUsers() {
         List<User> users = userService.getUsers();
+        log.info("Accepted GET request to get a list of all users");
         log.debug("Current number of users: {}", users.size());
         return users;
     }
 
     @PostMapping(value = "/users")
-    public User createUser(@RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) {
         validateUser(user);
         userService.add(user);
         return user;
     }
 
     @PutMapping("/users")
-    public User updateUser(@RequestBody User user, HttpServletResponse response) {
+    public User updateUser(@Valid @RequestBody User user, HttpServletResponse response) {
         validateUser(user);
         if (userService.isAlreadyExists(user)) {
             response.setStatus(HttpServletResponse.SC_OK);

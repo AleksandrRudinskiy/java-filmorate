@@ -1,10 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+@Component
 public class UserService {
     private final Map<Integer, User> users = new HashMap<>();
     private int currentId = 1;
