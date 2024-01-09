@@ -15,16 +15,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
-
 class FilmorateApplicationTests {
 
     private final FilmController filmController;
-   private final UserController userController;
+    private final UserController userController;
 
 
-
-
-@Autowired
+    @Autowired
     public FilmorateApplicationTests(FilmController filmController, UserController userController) {
         this.filmController = filmController;
         this.userController = userController;
@@ -38,7 +35,7 @@ class FilmorateApplicationTests {
                 .duration(100)
                 .build();
         filmController.createFilm(film);
-        assertEquals(1, filmController.getFilmService().getFilms().size(), "Film not created");
+        assertEquals(1, filmController.getFilmService().getFilmStorage().getFilms().size(), "Film not created");
     }
 
     @Test
