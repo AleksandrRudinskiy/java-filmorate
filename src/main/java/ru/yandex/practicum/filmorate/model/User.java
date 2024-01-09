@@ -16,10 +16,7 @@ public class User {
     private String login;
     @Email
     private String email;
-
     private String name;
-
     private LocalDate birthday;
-
     private Set<Long> friends;
 }

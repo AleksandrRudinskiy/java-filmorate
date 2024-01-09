@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import lombok.Getter;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.ValidationException;
@@ -9,7 +8,6 @@ import java.time.LocalDate;
 import java.util.*;
 
 @Component
-
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
     private int currentId = 1;
@@ -17,26 +15,15 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User add(User user) {
         validateUser(user);
-
-        boolean flag = true;
-        for (User item : users.values()) {
-            if (item.equals(user)) {
-                flag = false;
-                break;
-            }
-        }
-
-        if (user.getId() == 0 && flag) {
+        if (user.getId() == 0 && !users.containsValue(user)) {
             user.setId(currentId);
         }
         if (user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
-user.setFriends(new HashSet<>());
-
+        user.setFriends(new HashSet<>());
         users.put(user.getId(), user);
         currentId++;
-
         return user;
     }
 
@@ -52,9 +39,8 @@ user.setFriends(new HashSet<>());
 
     @Override
     public User update(User user) {
-
         if (users.containsKey(user.getId())) {
-            if (user.getFriends() ==null){
+            if (user.getFriends() == null) {
                 user.setFriends(new HashSet<>());
             }
             users.put(user.getId(), user);

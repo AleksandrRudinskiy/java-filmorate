@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 @Service
 @Getter
 public class UserService {
-
     UserStorage userStorage;
 
     @Autowired

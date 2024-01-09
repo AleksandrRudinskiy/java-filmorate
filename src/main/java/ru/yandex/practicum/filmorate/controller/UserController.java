@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 @RestController
 @Slf4j
 public class UserController {
-
     private final UserService userService;
 
     @Autowired
@@ -36,15 +35,7 @@ public class UserController {
                 .filter(item -> item.getId() == id)
                 .findFirst();
         Map<Long, User> users = userService.getUserStorage().getUsersMap();
-
-      //  List<User> friends = new ArrayList<>();
-
         Set<Long> friendsId = optionalUser.get().getFriends();
-
-
-//        for (Long itemId : friendsId) {
-//            friends.add(users.get(itemId));
-//        }
         return Optional.of(friendsId.stream().map(users::get).collect(Collectors.toList()));
     }
 
@@ -61,13 +52,7 @@ public class UserController {
         assert user1 != null;
         List<Long> commonFriendsId = userService.getCommonFriens(user1, user2);
         Map<Long, User> users = userService.getUserStorage().getUsersMap();
-
-        List<User> commonFriends = new ArrayList<>();
-
-        for (Long itemId : commonFriendsId) {
-            commonFriends.add(users.get(itemId));
-        }
-        return commonFriends;
+        return  commonFriendsId.stream().map(users::get).collect(Collectors.toList());
     }
 
     @GetMapping("/users/{userId}")
@@ -80,7 +65,6 @@ public class UserController {
         }
         return optionalUser;
     }
-
 
     @PostMapping(value = "/users")
     public User createUser(@Valid @RequestBody User user) {
@@ -102,7 +86,6 @@ public class UserController {
         }
     }
 
-
     @PutMapping("/users/{id}/friends/{friendId}")
     public User addFriend(@PathVariable long id, @PathVariable long friendId, HttpServletResponse response) {
         Optional<User> user = userService.getUserStorage().getUsers().stream()
@@ -122,15 +105,11 @@ public class UserController {
         }
     }
 
-
     @DeleteMapping("/users/{id}/friends/{friendId}")
     public User deleteFriend(@PathVariable long id, @PathVariable long friendId, HttpServletResponse response) {
         Optional<User> user = userService.getUserStorage().getUsers().stream()
                 .filter(item -> item.getId() == id)
                 .findFirst();
-
         return userService.deleteFriend(user.get(), friendId);
     }
-
-
 }

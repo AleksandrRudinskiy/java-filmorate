@@ -35,7 +35,7 @@ class FilmorateApplicationTests {
                 .duration(100)
                 .build();
         filmController.createFilm(film);
-        assertEquals(1, filmController.getFilmService().getFilms().size(), "Film not created");
+        assertEquals(1, filmController.getFilmService().getFilmStorage().getFilms().size(), "Film not created");
     }
 
     @Test
