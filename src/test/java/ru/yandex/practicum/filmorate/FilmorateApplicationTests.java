@@ -15,16 +15,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
-
 class FilmorateApplicationTests {
 
     private final FilmController filmController;
-   private final UserController userController;
+    private final UserController userController;
 
 
-
-
-@Autowired
+    @Autowired
     public FilmorateApplicationTests(FilmController filmController, UserController userController) {
         this.filmController = filmController;
         this.userController = userController;
