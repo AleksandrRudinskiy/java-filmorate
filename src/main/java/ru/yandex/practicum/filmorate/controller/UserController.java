@@ -2,11 +2,12 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,12 +31,13 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}/friends")
-    public Optional<List<User>> getFriendsUser(@PathVariable long id, HttpServletResponse response) {
+    public Optional<List<User>> getFriendsUser(@PathVariable long id) {
         Optional<User> optionalUser = userService.getUserStorage().getUsers().stream()
                 .filter(item -> item.getId() == id)
                 .findFirst();
         Map<Long, User> users = userService.getUserStorage().getUsersMap();
-        Set<Long> friendsId = optionalUser.get().getFriends();
+        Set<Long> friendsId = new HashSet<>();
+        optionalUser.ifPresent(user -> friendsId.addAll(user.getFriends()));
         return Optional.of(friendsId.stream().map(users::get).collect(Collectors.toList()));
     }
 
@@ -44,26 +46,25 @@ public class UserController {
         User user1 = userService.getUserStorage().getUsers().stream()
                 .filter(item -> item.getId() == id)
                 .findFirst().orElse(null);
-
         User user2 = userService.getUserStorage().getUsers().stream()
                 .filter(item -> item.getId() == otherId)
                 .findFirst().orElse(null);
-
         assert user1 != null;
         List<Long> commonFriendsId = userService.getCommonFriens(user1, user2);
         Map<Long, User> users = userService.getUserStorage().getUsersMap();
-        return  commonFriendsId.stream().map(users::get).collect(Collectors.toList());
+        return commonFriendsId.stream().map(users::get).collect(Collectors.toList());
     }
 
     @GetMapping("/users/{userId}")
-    public Optional<User> getUserById(@PathVariable int userId, HttpServletResponse response) {
+    public ResponseEntity<Optional<User>> getUserById(@PathVariable int userId) {
         Optional<User> optionalUser = userService.getUserStorage().getUsers().stream()
                 .filter(item -> item.getId() == userId)
                 .findFirst();
         if (optionalUser.isEmpty()) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(optionalUser);
         }
-        return optionalUser;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(optionalUser);
     }
 
     @PostMapping(value = "/users")
@@ -73,43 +74,42 @@ public class UserController {
     }
 
     @PutMapping("/users")
-    public User updateUser(@RequestBody User user, HttpServletResponse response) {
+    public ResponseEntity<User> updateUser(@RequestBody User user) {
         if (userService.getUserStorage().isAlreadyExists(user)) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return userService.getUserStorage().update(user);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(userService.getUserStorage().update(user));
         } else if (!userService.getUserStorage().isAlreadyExists(user) && (user.getId() != 0)) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return user;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(user);
         } else {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return userService.getUserStorage().add(user);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(userService.getUserStorage().add(user));
         }
     }
 
     @PutMapping("/users/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable long id, @PathVariable long friendId, HttpServletResponse response) {
+    public ResponseEntity<Optional<User>> addFriend(@PathVariable long id, @PathVariable long friendId) {
         Optional<User> user = userService.getUserStorage().getUsers().stream()
                 .filter(item -> item.getId() == id)
                 .findFirst();
-
         Optional<User> friendUser = userService.getUserStorage().getUsers().stream()
                 .filter(item -> item.getId() == friendId)
                 .findFirst();
-
         if (user.isPresent() && friendUser.isPresent()) {
             userService.addFriend(friendUser.get(), id);
-            return userService.addFriend(user.get(), friendId);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(Optional.of(userService.addFriend(user.get(), friendId)));
         } else {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return user.get();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Optional.empty());
         }
     }
 
     @DeleteMapping("/users/{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable long id, @PathVariable long friendId, HttpServletResponse response) {
+    public Optional<User> deleteFriend(@PathVariable long id, @PathVariable long friendId) {
         Optional<User> user = userService.getUserStorage().getUsers().stream()
                 .filter(item -> item.getId() == id)
                 .findFirst();
-        return userService.deleteFriend(user.get(), friendId);
+        return user.map(value -> userService.deleteFriend(value, friendId));
     }
 }

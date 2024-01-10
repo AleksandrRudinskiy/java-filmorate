@@ -3,11 +3,12 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -40,14 +41,14 @@ public class FilmController {
     }
 
     @GetMapping("/films/{filmId}")
-    public Optional<Film> getFilmById(@PathVariable int filmId, HttpServletResponse response) {
+    public ResponseEntity<Optional<Film>> getFilmById(@PathVariable int filmId) {
         Optional<Film> optionalFilm = filmService.getFilmStorage().getFilms().stream()
                 .filter(item -> item.getId() == filmId)
                 .findFirst();
         if (optionalFilm.isEmpty()) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(optionalFilm);
         }
-        return optionalFilm;
+        return ResponseEntity.status(HttpStatus.OK).body(optionalFilm);
     }
 
     @PostMapping(value = "/films")
@@ -58,44 +59,45 @@ public class FilmController {
     }
 
     @PutMapping("/films")
-    public Film updateFilm(@RequestBody Film film, HttpServletResponse response) {
+    public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
         log.info("Film is valid: " + film.getName());
         if (filmService.getFilmStorage().isAlreadyExists(film)) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return filmService.getFilmStorage().update(film);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(filmService.getFilmStorage().update(film));
         } else if (!filmService.getFilmStorage().isAlreadyExists(film) && (film.getId() != 0)) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return film;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(filmService.getFilmStorage().update(film));
         } else {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return filmService.getFilmStorage().add(film);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(filmService.getFilmStorage().add(film));
         }
     }
 
     @PutMapping("/films/{filmId}/like/{userId}")
-    public Film addLike(@PathVariable long filmId, @PathVariable long userId, HttpServletResponse response) {
+    public ResponseEntity<Film> addLike(@PathVariable long filmId, @PathVariable long userId) {
         Optional<Film> film = filmService.getFilmStorage().getFilms().stream()
                 .filter(item -> item.getId() == filmId)
                 .findFirst();
-
         if (film.isPresent()) {
             filmService.addLike(film.get(), userId);
-            return filmService.addLike(film.get(), userId);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(filmService.addLike(film.get(), userId));
         } else {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return film.get();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(film.get());
         }
     }
 
     @DeleteMapping("/films/{filmId}/like/{userId}")
-    public Film deleteLike(@PathVariable long filmId, @PathVariable long userId, HttpServletResponse response) {
+    public ResponseEntity<Optional<Film>> deleteLike(@PathVariable long filmId, @PathVariable long userId) {
         Optional<Film> film = filmService.getFilmStorage().getFilms().stream()
                 .filter(item -> item.getId() == filmId)
                 .findFirst();
         if (userId < 0) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(film);
         }
-        return filmService.deleteLike(film.get(), userId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Optional.of(filmService.deleteLike(film.get(), userId)));
     }
 
 }
