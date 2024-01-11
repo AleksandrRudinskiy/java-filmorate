@@ -16,4 +16,13 @@ public interface FilmStorage {
     Film update(Film film);
 
     Map<Long, Film> getFilmsMap();
+
+    List<Film> getBestFilms(int count);
+
+    Film deleteLike(Film film, long userId);
+
+    Film addLike(Film film, long userId);
+
+    Film getFilmById(int id);
+
 }

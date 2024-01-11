@@ -1,46 +1,53 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Service
 @Getter
+@AllArgsConstructor
 public class UserService {
     UserStorage userStorage;
 
-    @Autowired
-    public UserService() {
-        userStorage = new InMemoryUserStorage();
+    public User add(User user) {
+        return userStorage.add(user);
+    }
+
+    public List<User> getUsers() {
+        return userStorage.getUsers();
+    }
+
+    public User update(User user) {
+        return userStorage.update(user);
+    }
+
+    public boolean isAlreadyExists(User user) {
+        return userStorage.isAlreadyExists(user);
+    }
+
+    public Map<Long, User> getUsersMap() {
+        return userStorage.getUsersMap();
     }
 
     public User addFriend(User user, long friendId) {
-        Set<Long> updateFriends = new HashSet<>(user.getFriends());
-        updateFriends.add(friendId);
-        user.setFriends(updateFriends);
-        return user;
+        return userStorage.addFriend(user, friendId);
     }
 
     public User deleteFriend(User user, long friendId) {
-        Set<Long> updateFriends = new HashSet<>(user.getFriends());
-        updateFriends.remove(friendId);
-        user.setFriends(updateFriends);
-        return user;
+        return userStorage.deleteFriend(user, friendId);
     }
 
-    public List<Long> getCommonFriens(User user1, User user2) {
-        return user1.getFriends()
-                .stream()
-                .filter(f -> user2.getFriends().contains(f))
-                .collect(Collectors.toList());
+    public List<Long> getCommonFriends(User user1, User user2) {
+        return userStorage.getCommonFriends(user1, user2);
     }
 
+    public User getUserById(long id) {
+        return userStorage.getUserById(id);
+    }
 }

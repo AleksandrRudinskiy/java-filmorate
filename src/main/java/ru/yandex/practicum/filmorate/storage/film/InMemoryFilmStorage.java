@@ -2,20 +2,17 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.ValidationException;
 
-import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
     private int currentFilmId = 1;
-    private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
     @Override
     public Film add(Film film) {
-        validateFilm(film);
         if (film.getId() == 0 && !films.containsValue(film)) {
             film.setId(currentFilmId);
         }
@@ -51,19 +48,35 @@ public class InMemoryFilmStorage implements FilmStorage {
         return films;
     }
 
-    private void validateFilm(Film film) {
-        if (film.getName().isEmpty() || film.getName().isBlank()) {
-            throw new ValidationException("The name is empty");
-        }
-        if (film.getDescription().length() > 200) {
-            throw new ValidationException("The description length more than 200 symbols");
-        }
-        if (film.getReleaseDate().isBefore(startReleaseDate)) {
-            throw new ValidationException("Release date earlier than 28-12-1895");
-        }
-        if (film.getDuration() < 0) {
-            throw new ValidationException("Film duration is negative");
-        }
+    @Override
+    public List<Film> getBestFilms(int count) {
+        return films.values().stream()
+                .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
+                .limit(count)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Film deleteLike(Film film, long userId) {
+        film.getLikes().remove(userId);
+        film.setLikes(film.getLikes());
+        return film;
+    }
+
+    @Override
+    public Film addLike(Film film, long userId) {
+        Set<Long> updateLikes = new HashSet<>(film.getLikes());
+        updateLikes.add(userId);
+        film.setLikes(updateLikes);
+        return film;
+    }
+
+    @Override
+    public Film getFilmById(int id) {
+        Optional<Film> film = films.values().stream()
+                .filter(item -> item.getId() == id)
+                .findFirst();
+        return film.orElse(null);
     }
 
 }

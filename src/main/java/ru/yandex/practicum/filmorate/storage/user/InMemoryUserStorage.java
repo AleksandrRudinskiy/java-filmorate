@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.model.ValidationException;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -51,6 +52,37 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Map<Long, User> getUsersMap() {
         return users;
+    }
+
+    @Override
+    public User addFriend(User user, long friendId) {
+        user.getFriends().add(friendId);
+        user.setFriends(user.getFriends());
+        return user;
+    }
+
+    @Override
+    public User deleteFriend(User user, long friendId) {
+        Set<Long> updateFriends = new HashSet<>(user.getFriends());
+        updateFriends.remove(friendId);
+        user.setFriends(updateFriends);
+        return user;
+    }
+
+    @Override
+    public List<Long> getCommonFriends(User user1, User user2) {
+        return user1.getFriends()
+                .stream()
+                .filter(f -> user2.getFriends().contains(f))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public User getUserById(long id) {
+        Optional<User> user = users.values().stream()
+                .filter(item -> item.getId() == id)
+                .findFirst();
+        return user.orElse(null);
     }
 
     private void validateUser(User user) {

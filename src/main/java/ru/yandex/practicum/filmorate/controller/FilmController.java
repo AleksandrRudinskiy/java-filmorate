@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,22 +11,17 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
 @Getter
+@AllArgsConstructor
 public class FilmController {
     private final FilmService filmService;
 
-    @Autowired
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
-
     @GetMapping("/films")
     public List<Film> findAllFilms() {
-        List<Film> films = filmService.getFilmStorage().getFilms();
+        List<Film> films = filmService.getFilms();
         log.info("Accepted GET request to get a list of all movies");
         log.info("Current number of films: {}", films.size());
         return films;
@@ -35,47 +30,43 @@ public class FilmController {
     @GetMapping("/films/popular")
     public List<Film> findBestFilms(
             @RequestParam(defaultValue = "10", required = false) Integer count) {
-        return filmService.getBestFilms().stream()
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmService.getBestFilms(count);
     }
 
     @GetMapping("/films/{filmId}")
-    public ResponseEntity<Optional<Film>> getFilmById(@PathVariable int filmId) {
-        Optional<Film> optionalFilm = filmService.getFilmStorage().getFilms().stream()
-                .filter(item -> item.getId() == filmId)
-                .findFirst();
-        if (optionalFilm.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(optionalFilm);
+    public ResponseEntity<Film> getFilmById(@PathVariable int filmId) {
+        Film film = filmService.getFilmById(filmId);
+        if (film == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(optionalFilm);
+        return ResponseEntity.status(HttpStatus.OK).body(film);
     }
 
     @PostMapping(value = "/films")
     public Film createFilm(@RequestBody Film film) {
         log.info("Film " + film.getName() + " added.");
-        filmService.getFilmStorage().add(film);
+        filmService.add(film);
         return film;
     }
 
     @PutMapping("/films")
     public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
         log.info("Film is valid: " + film.getName());
-        if (filmService.getFilmStorage().isAlreadyExists(film)) {
+        if (filmService.isAlreadyExists(film)) {
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(filmService.getFilmStorage().update(film));
-        } else if (!filmService.getFilmStorage().isAlreadyExists(film) && (film.getId() != 0)) {
+                    .body(filmService.update(film));
+        } else if (!filmService.isAlreadyExists(film) && (film.getId() != 0)) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(filmService.getFilmStorage().update(film));
+                    .body(filmService.update(film));
         } else {
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(filmService.getFilmStorage().add(film));
+                    .body(filmService.add(film));
         }
     }
 
     @PutMapping("/films/{filmId}/like/{userId}")
     public ResponseEntity<Film> addLike(@PathVariable long filmId, @PathVariable long userId) {
-        Optional<Film> film = filmService.getFilmStorage().getFilms().stream()
+        Optional<Film> film = filmService.getFilms().stream()
                 .filter(item -> item.getId() == filmId)
                 .findFirst();
         if (film.isPresent()) {
@@ -89,7 +80,7 @@ public class FilmController {
 
     @DeleteMapping("/films/{filmId}/like/{userId}")
     public ResponseEntity<Optional<Film>> deleteLike(@PathVariable long filmId, @PathVariable long userId) {
-        Optional<Film> film = filmService.getFilmStorage().getFilms().stream()
+        Optional<Film> film = filmService.getFilms().stream()
                 .filter(item -> item.getId() == filmId)
                 .findFirst();
         if (userId < 0) {
