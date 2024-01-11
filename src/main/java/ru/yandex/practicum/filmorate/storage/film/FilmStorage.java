@@ -23,6 +23,6 @@ public interface FilmStorage {
 
     Film addLike(Film film, long userId);
 
-    Film getFilmById(int id);
+    Film getFilmById(long id);
 
 }

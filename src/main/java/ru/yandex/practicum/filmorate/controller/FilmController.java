@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.NotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +38,7 @@ public class FilmController {
     public ResponseEntity<Film> getFilmById(@PathVariable int filmId) {
         Film film = filmService.getFilmById(filmId);
         if (film == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            throw new NotFoundException("Фильма с id= " + filmId + " нет.");
         }
         return ResponseEntity.status(HttpStatus.OK).body(film);
     }
@@ -79,16 +80,17 @@ public class FilmController {
     }
 
     @DeleteMapping("/films/{filmId}/like/{userId}")
-    public ResponseEntity<Optional<Film>> deleteLike(@PathVariable long filmId, @PathVariable long userId) {
-        Optional<Film> film = filmService.getFilms().stream()
-                .filter(item -> item.getId() == filmId)
-                .findFirst();
+    public ResponseEntity<Film> deleteLike(@PathVariable long filmId, @PathVariable long userId) {
+        Film film = filmService.getFilmById(filmId);
+        if (film == null) {
+            throw new NotFoundException("filmId не найден");
+        }
         if (userId < 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(film);
         }
         return ResponseEntity.status(HttpStatus.OK)
-                .body(Optional.of(filmService.deleteLike(film.get(), userId)));
+                .body(filmService.deleteLike(film, userId));
     }
 
 }

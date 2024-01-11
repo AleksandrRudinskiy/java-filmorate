@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.yandex.practicum.filmorate.model.ValidationException;
+import ru.yandex.practicum.filmorate.storage.NotFoundException;
 
 import java.util.Map;
 
@@ -20,4 +21,21 @@ public class ErrorHandler {
         );
     }
 
+    @ExceptionHandler
+    public ResponseEntity<Map<String, String>> handleException(final RuntimeException e) {
+        return new ResponseEntity<>(
+                Map.of("error", "Ошибка.",
+                        "errorMessage", e.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Map<String, String>> handleNotFoundException(final NotFoundException e) {
+        return new ResponseEntity<>(
+                Map.of("error", "Не найден id.",
+                        "errorMessage", e.getMessage()),
+                HttpStatus.NOT_FOUND
+        );
+    }
 }
