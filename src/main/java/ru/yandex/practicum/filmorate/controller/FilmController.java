@@ -38,7 +38,7 @@ public class FilmController {
     public ResponseEntity<Film> getFilmById(@PathVariable int filmId) {
         Film film = filmService.getFilmById(filmId);
         if (film == null) {
-            throw new NotFoundException("Фильма с id= " + filmId + " нет.");
+            throw new NotFoundException("Фильма с id = " + filmId + " нет.");
         }
         return ResponseEntity.status(HttpStatus.OK).body(film);
     }

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.NotFoundException;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -27,31 +28,30 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}/friends")
-    public Optional<List<User>> getFriendsUser(@PathVariable long id) {
-        Optional<User> optionalUser = userService.getUsers().stream()
-                .filter(item -> item.getId() == id)
-                .findFirst();
+    public List<User> getFriendsUser(@PathVariable long id) {
+        User user = userService.getUserById(id);
         Map<Long, User> users = userService.getUsersMap();
-        Set<Long> friendsId = new HashSet<>();
-        optionalUser.ifPresent(user -> friendsId.addAll(user.getFriends()));
-        return Optional.of(friendsId.stream().map(users::get).collect(Collectors.toList()));
+        Set<Long> friendsId = new HashSet<>(user.getFriends());
+        return friendsId.stream().map(users::get).collect(Collectors.toList());
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
         User user1 = userService.getUserById(id);
+        if (user1 == null) {
+            throw new NotFoundException("Пользователя с id = " + id + " нет.");
+        }
         User user2 = userService.getUserById(otherId);
-        assert user1 != null;
         List<Long> commonFriendsId = userService.getCommonFriends(user1, user2);
         Map<Long, User> users = userService.getUsersMap();
         return commonFriendsId.stream().map(users::get).collect(Collectors.toList());
     }
 
     @GetMapping("/users/{userId}")
-    public ResponseEntity<User> getUserById(@PathVariable int userId) {
+    public ResponseEntity<User> getUserById(@PathVariable long userId) {
         User user = userService.getUserById(userId);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            throw new NotFoundException("Пользователя с id = " + userId + " нет.");
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .body(user);
@@ -78,20 +78,16 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}/friends/{friendId}")
-    public ResponseEntity<Optional<User>> addFriend(@PathVariable long id, @PathVariable long friendId) {
-        Optional<User> user = userService.getUsers().stream()
-                .filter(item -> item.getId() == id)
-                .findFirst();
-        Optional<User> friendUser = userService.getUsers().stream()
-                .filter(item -> item.getId() == friendId)
-                .findFirst();
-        if (user.isPresent() && friendUser.isPresent()) {
-            userService.addFriend(friendUser.get(), id);
+    public ResponseEntity<User> addFriend(@PathVariable long id, @PathVariable long friendId) {
+        User user = userService.getUserById(id);
+        User friendUser = userService.getUserById(friendId);
+        if (user != null && friendUser != null) {
+            userService.addFriend(friendUser, id);
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(Optional.of(userService.addFriend(user.get(), friendId)));
+                    .body(userService.addFriend(user, friendId));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Optional.empty());
+                    .body(user);
         }
     }
 
