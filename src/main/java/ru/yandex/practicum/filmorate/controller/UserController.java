@@ -10,7 +10,10 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -92,8 +95,16 @@ public class UserController {
     }
 
     @DeleteMapping("/users/{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+    public ResponseEntity<User> deleteFriend(@PathVariable long id, @PathVariable long friendId) {
         User user = userService.getUserById(id);
-        return userService.deleteFriend(user, friendId);
+        User userFriend = userService.getUserById(friendId);
+        if (user != null && userFriend != null) {
+            userService.deleteFriend(user, friendId);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(userService.deleteFriend(user, friendId));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(user);
+        }
     }
 }
