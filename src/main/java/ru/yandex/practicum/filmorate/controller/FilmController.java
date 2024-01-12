@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.NotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -22,8 +21,8 @@ public class FilmController {
 
     @GetMapping("/films")
     public List<Film> findAllFilms() {
-        List<Film> films = filmService.getFilms();
         log.info("Accepted GET request to get a list of all movies");
+        List<Film> films = filmService.getFilms();
         log.info("Current number of films: {}", films.size());
         return films;
     }
@@ -44,21 +43,23 @@ public class FilmController {
     }
 
     @PostMapping(value = "/films")
-    public Film createFilm(@RequestBody Film film) {
+    public ResponseEntity<Film> createFilm(@RequestBody Film film) {
         log.info("Film " + film.getName() + " added.");
         filmService.add(film);
-        return film;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(film);
     }
 
     @PutMapping("/films")
     public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
         log.info("Film is valid: " + film.getName());
         if (filmService.isAlreadyExists(film)) {
+            Film updateFilm = filmService.update(film);
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(filmService.update(film));
+                    .body(updateFilm);
         } else if (!filmService.isAlreadyExists(film) && (film.getId() != 0)) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(filmService.update(film));
+                    .body(film);
         } else {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(filmService.add(film));
@@ -67,15 +68,13 @@ public class FilmController {
 
     @PutMapping("/films/{filmId}/like/{userId}")
     public ResponseEntity<Film> addLike(@PathVariable long filmId, @PathVariable long userId) {
-        Optional<Film> film = filmService.getFilms().stream()
-                .filter(item -> item.getId() == filmId)
-                .findFirst();
-        if (film.isPresent()) {
-            filmService.addLike(film.get(), userId);
+        Film film = filmService.getFilmById(filmId);
+        if (film != null) {
+            filmService.addLike(film, userId);
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(filmService.addLike(film.get(), userId));
+                    .body(filmService.addLike(film, userId));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(film.get());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
