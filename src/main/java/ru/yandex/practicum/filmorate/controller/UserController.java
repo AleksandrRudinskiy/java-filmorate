@@ -37,12 +37,12 @@ public class UserController {
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
-        User user1 = userService.getUserById(id);
-        if (user1 == null) {
+        User firstUser = userService.getUserById(id);
+        if (firstUser == null) {
             throw new NotFoundException("Пользователя с id = " + id + " нет.");
         }
-        User user2 = userService.getUserById(otherId);
-        List<Long> commonFriendsId = userService.getCommonFriends(user1, user2);
+        User secondUser = userService.getUserById(otherId);
+        List<Long> commonFriendsId = userService.getCommonFriends(firstUser, secondUser);
         Map<Long, User> users = userService.getUsersMap();
         return commonFriendsId.stream().map(users::get).collect(Collectors.toList());
     }
@@ -80,9 +80,9 @@ public class UserController {
     @PutMapping("/users/{id}/friends/{friendId}")
     public ResponseEntity<User> addFriend(@PathVariable long id, @PathVariable long friendId) {
         User user = userService.getUserById(id);
-        User friendUser = userService.getUserById(friendId);
-        if (user != null && friendUser != null) {
-            userService.addFriend(friendUser, id);
+        User userFriend = userService.getUserById(friendId);
+        if (user != null && userFriend != null) {
+            userService.addFriend(userFriend, id);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(userService.addFriend(user, friendId));
         } else {
@@ -92,10 +92,8 @@ public class UserController {
     }
 
     @DeleteMapping("/users/{id}/friends/{friendId}")
-    public Optional<User> deleteFriend(@PathVariable long id, @PathVariable long friendId) {
-        Optional<User> user = userService.getUsers().stream()
-                .filter(item -> item.getId() == id)
-                .findFirst();
-        return user.map(value -> userService.deleteFriend(value, friendId));
+    public User deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        User user = userService.getUserById(id);
+        return userService.deleteFriend(user, friendId);
     }
 }
