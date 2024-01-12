@@ -4,15 +4,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import ru.yandex.practicum.filmorate.model.ValidationException;
-import ru.yandex.practicum.filmorate.storage.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 
 import java.util.Map;
 
 @ControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler
+    @ExceptionHandler(ValidationException.class)
     public ResponseEntity<Map<String, String>> handleValidationException(final ValidationException e) {
         return new ResponseEntity<>(
                 Map.of("error", "Ошибка валидации.",
@@ -21,7 +21,7 @@ public class ErrorHandler {
         );
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleException(final RuntimeException e) {
         return new ResponseEntity<>(
                 Map.of("error", "Ошибка.",
@@ -30,7 +30,7 @@ public class ErrorHandler {
         );
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotFoundException(final NotFoundException e) {
         return new ResponseEntity<>(
                 Map.of("error", "Не найден id.",
