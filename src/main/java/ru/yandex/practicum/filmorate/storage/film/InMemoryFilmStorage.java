@@ -65,18 +65,13 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addLike(Film film, long userId) {
-        Set<Long> updateLikes = new HashSet<>(film.getLikes());
-        updateLikes.add(userId);
-        film.setLikes(updateLikes);
+        film.getLikes().add(userId);
         return film;
     }
 
     @Override
     public Film getFilmById(long id) {
-        Optional<Film> film = films.values().stream()
-                .filter(item -> item.getId() == id)
-                .findFirst();
-        return film.orElse(null);
+        return films.get(id);
     }
 
 }

@@ -79,10 +79,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User getUserById(long id) {
-        Optional<User> user = users.values().stream()
-                .filter(item -> item.getId() == id)
-                .findFirst();
-        return user.orElse(null);
+        return users.get(id);
     }
 
     private void validateUser(User user) {
