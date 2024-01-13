@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -70,16 +71,24 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<Long> getCommonFriends(User user1, User user2) {
+    public List<User> getCommonFriends(User user1, User user2) {
         return user1.getFriends()
                 .stream()
                 .filter(f -> user2.getFriends().contains(f))
+                .map(users::get)
                 .collect(Collectors.toList());
     }
 
     @Override
     public User getUserById(long id) {
         return users.get(id);
+    }
+
+    @Override
+    public List<User> getUsersFriends(User user) {
+        return user.getFriends().stream()
+                .map(users::get)
+                .collect(Collectors.toList());
     }
 
     private void validateUser(User user) {

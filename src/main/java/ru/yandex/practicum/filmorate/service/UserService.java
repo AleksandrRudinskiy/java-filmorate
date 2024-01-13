@@ -43,11 +43,15 @@ public class UserService {
         return userStorage.deleteFriend(user, friendId);
     }
 
-    public List<Long> getCommonFriends(User user1, User user2) {
-        return userStorage.getCommonFriends(user1, user2);
+    public List<User> getCommonFriends(User firstUser, User secondUser) {
+        return userStorage.getCommonFriends(firstUser, secondUser);
     }
 
     public User getUserById(long id) {
         return userStorage.getUserById(id);
+    }
+
+    public List<User> getUsersFriends(User user) {
+        return userStorage.getUsersFriends(user);
     }
 }

@@ -82,7 +82,7 @@ public class FilmController {
     public ResponseEntity<Film> deleteLike(@PathVariable long filmId, @PathVariable long userId) {
         Film film = filmService.getFilmById(filmId);
         if (film == null) {
-            throw new NotFoundException("filmId не найден");
+            throw new NotFoundException("film с id = " + filmId + " не найден");
         }
         if (userId < 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

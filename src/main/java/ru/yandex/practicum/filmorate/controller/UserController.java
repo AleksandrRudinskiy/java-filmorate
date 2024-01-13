@@ -10,11 +10,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
@@ -31,11 +27,12 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}/friends")
-    public List<User> getFriendsUser(@PathVariable long id) {
+    public List<User> getUsersFriends(@PathVariable long id) {
         User user = userService.getUserById(id);
-        Map<Long, User> users = userService.getUsersMap();
-        Set<Long> friendsId = new HashSet<>(user.getFriends());
-        return friendsId.stream().map(users::get).collect(Collectors.toList());
+        if (user == null) {
+            throw new NotFoundException("Пользователя с id = " + id + " нет.");
+        }
+        return userService.getUsersFriends(user);
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
@@ -45,9 +42,10 @@ public class UserController {
             throw new NotFoundException("Пользователя с id = " + id + " нет.");
         }
         User secondUser = userService.getUserById(otherId);
-        List<Long> commonFriendsId = userService.getCommonFriends(firstUser, secondUser);
-        Map<Long, User> users = userService.getUsersMap();
-        return commonFriendsId.stream().map(users::get).collect(Collectors.toList());
+        if (secondUser == null) {
+            throw new NotFoundException("Пользователя с id = " + otherId + " нет.");
+        }
+        return userService.getCommonFriends(firstUser, secondUser);
     }
 
     @GetMapping("/users/{userId}")
@@ -72,8 +70,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(userService.update(user));
         } else if (!userService.isAlreadyExists(user) && (user.getId() != 0)) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(user);
+            throw new NotFoundException("Пользователя с id = " + user.getId() + " нет.");
         } else {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(userService.add(user));
