@@ -17,14 +17,10 @@ public interface UserStorage {
 
     Map<Long, User> getUsersMap();
 
-    User addFriend(User user, long friendId);
+    User addFriend(long id, long friendId);
 
-    User deleteFriend(User user, long friendId);
-
-    List<User> getCommonFriends(User firstUser, User secondUser);
+    User deleteFriend(long id, long friendId);
 
     User getUserById(long id);
-
-    List<User> getUsersFriends(User user);
 
 }

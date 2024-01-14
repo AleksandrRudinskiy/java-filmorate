@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -40,6 +40,8 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User update(User user) {
+
+
         if (users.containsKey(user.getId())) {
             if (user.getFriends() == null) {
                 user.setFriends(new HashSet<>());
@@ -55,39 +57,39 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User addFriend(User user, long friendId) {
+    public User addFriend(long id, long friendId) {
+        if (!users.containsKey(id)) {
+            throw new NotFoundException("Пользователя с id = " + id + " нет.");
+        }
+        if (!users.containsKey(friendId)) {
+            throw new NotFoundException("Пользователя с id = " + friendId + " нет.");
+        }
+        User user = getUserById(id);
         user.getFriends().add(friendId);
-        user.setFriends(user.getFriends());
+        User friendUser = getUserById(friendId);
+        friendUser.getFriends().add(id);
         return user;
     }
 
     @Override
-    public User deleteFriend(User user, long friendId) {
-        Set<Long> updateFriends = new HashSet<>(user.getFriends());
-        updateFriends.remove(friendId);
-        user.setFriends(updateFriends);
+    public User deleteFriend(long id, long friendId) {
+        User user = getUserById(id);
+        User userFriend = getUserById(friendId);
+        if (users.containsKey(id) && users.containsKey(friendId)) {
+            user.getFriends().remove(friendId);
+        } else {
+            throw new NotFoundException("Пользователя с id = " + id + " нет.");
+        }
+        user.getFriends().remove(friendId);
         return user;
-    }
-
-    @Override
-    public List<User> getCommonFriends(User user1, User user2) {
-        return user1.getFriends()
-                .stream()
-                .filter(f -> user2.getFriends().contains(f))
-                .map(users::get)
-                .collect(Collectors.toList());
     }
 
     @Override
     public User getUserById(long id) {
+        if (!users.containsKey(id)) {
+            throw new NotFoundException("Пользователя с id = " + id + " нет.");
+        }
         return users.get(id);
-    }
-
-    @Override
-    public List<User> getUsersFriends(User user) {
-        return user.getFriends().stream()
-                .map(users::get)
-                .collect(Collectors.toList());
     }
 
     private void validateUser(User user) {
