@@ -18,12 +18,12 @@ public class FilmService {
 
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
-    public Film addLike(Film film, long userId) {
-        return filmStorage.addLike(film, userId);
+    public Film addLike(long id, long userId) {
+        return filmStorage.addLike(id, userId);
     }
 
-    public Film deleteLike(Film film, long userId) {
-        return filmStorage.deleteLike(film, userId);
+    public Film deleteLike(long id, long userId) {
+        return filmStorage.deleteLike(id, userId);
     }
 
     public List<Film> getBestFilms(int count) {
@@ -44,7 +44,13 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-        return filmStorage.update(film);
+        if (isAlreadyExists(film)) {
+            return filmStorage.update(film);
+        } else if (!isAlreadyExists(film) && (film.getId() != 0)) {
+            throw new RuntimeException();
+        } else {
+            return filmStorage.add(film);
+        }
     }
 
     public Film getFilmById(long id) {

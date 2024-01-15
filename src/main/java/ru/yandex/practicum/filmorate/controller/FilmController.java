@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -35,11 +34,7 @@ public class FilmController {
 
     @GetMapping("/films/{filmId}")
     public ResponseEntity<Film> getFilmById(@PathVariable int filmId) {
-        Film film = filmService.getFilmById(filmId);
-        if (film == null) {
-            throw new NotFoundException("Фильма с id = " + filmId + " нет.");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(film);
+        return ResponseEntity.status(HttpStatus.OK).body(filmService.getFilmById(filmId));
     }
 
     @PostMapping(value = "/films")
@@ -52,44 +47,20 @@ public class FilmController {
 
     @PutMapping("/films")
     public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
-        log.info("Film is valid: " + film.getName());
-        if (filmService.isAlreadyExists(film)) {
-            Film updateFilm = filmService.update(film);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(updateFilm);
-        } else if (!filmService.isAlreadyExists(film) && (film.getId() != 0)) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(film);
-        } else {
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(filmService.add(film));
-        }
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(filmService.update(film));
     }
 
     @PutMapping("/films/{filmId}/like/{userId}")
     public ResponseEntity<Film> addLike(@PathVariable long filmId, @PathVariable long userId) {
-        Film film = filmService.getFilmById(filmId);
-        if (film != null) {
-            filmService.addLike(film, userId);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(filmService.addLike(film, userId));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(filmService.addLike(filmId, userId));
     }
 
     @DeleteMapping("/films/{filmId}/like/{userId}")
     public ResponseEntity<Film> deleteLike(@PathVariable long filmId, @PathVariable long userId) {
-        Film film = filmService.getFilmById(filmId);
-        if (film == null) {
-            throw new NotFoundException("film с id = " + filmId + " не найден");
-        }
-        if (userId < 0) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(film);
-        }
         return ResponseEntity.status(HttpStatus.OK)
-                .body(filmService.deleteLike(film, userId));
+                .body(filmService.deleteLike(filmId, userId));
     }
 
 }
