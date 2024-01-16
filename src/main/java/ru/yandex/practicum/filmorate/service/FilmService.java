@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -19,11 +20,24 @@ public class FilmService {
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
     public Film addLike(long id, long userId) {
-        return filmStorage.addLike(id, userId);
+        if (!filmStorage.getFilmsMap().containsKey(id)) {
+            throw new NotFoundException("film с id = " + id + " не найден");
+        }
+        Film film = filmStorage.getFilmsMap().get(id);
+        film.getLikes().add(userId);
+        return film;
     }
 
     public Film deleteLike(long id, long userId) {
-        return filmStorage.deleteLike(id, userId);
+        if (!filmStorage.getFilmsMap().containsKey(id)) {
+            throw new NotFoundException("film с id = " + id + " не найден");
+        }
+        if (userId < 0) {
+            throw new NotFoundException("Неверный id пользователя");
+        }
+        Film film = getFilmById(id);
+        film.getLikes().remove(userId);
+        return film;
     }
 
     public List<Film> getBestFilms(int count) {

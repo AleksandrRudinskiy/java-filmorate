@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Getter
 @AllArgsConstructor
 public class UserService {
-    UserStorage userStorage;
+    private final UserStorage userStorage;
 
     public User add(User user) {
         return userStorage.add(user);
@@ -44,11 +44,30 @@ public class UserService {
     }
 
     public User addFriend(long id, long friendId) {
-        return userStorage.addFriend(id, friendId);
+        if (!getUsersMap().containsKey(id)) {
+            throw new NotFoundException("Пользователя с id = " + id + " нет.");
+        }
+        if (!getUsersMap().containsKey(friendId)) {
+            throw new NotFoundException("Пользователя с id = " + friendId + " нет.");
+        }
+        User user = getUserById(id);
+        user.getFriends().add(friendId);
+        User friendUser = getUserById(friendId);
+        friendUser.getFriends().add(id);
+        return user;
     }
 
     public User deleteFriend(long id, long friendId) {
-        return userStorage.deleteFriend(id, friendId);
+        User user = getUserById(id);
+        if (getUsersMap().containsKey(id) && getUsersMap().containsKey(friendId)) {
+            user.getFriends().remove(friendId);
+        } else if (!getUsersMap().containsKey(id)) {
+            throw new NotFoundException("Пользователя с id = " + id + " нет.");
+        } else {
+            throw new NotFoundException("Пользователя с friendId = " + friendId + " нет.");
+        }
+        user.getFriends().remove(friendId);
+        return user;
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
@@ -63,7 +82,7 @@ public class UserService {
         return firstUser.getFriends()
                 .stream()
                 .filter(f -> secondUser.getFriends().contains(f))
-                .map(i -> userStorage.getUserById(i))
+                .map(userStorage::getUserById)
                 .collect(Collectors.toList());
     }
 
@@ -78,7 +97,7 @@ public class UserService {
             throw new NotFoundException("Пользователя с id = " + id + " нет.");
         }
         return user.getFriends().stream()
-                .map(i -> userStorage.getUserById(i))
+                .map(userStorage::getUserById)
                 .collect(Collectors.toList());
     }
 }
