@@ -4,11 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,8 +18,9 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userStorage;
 
-    public User add(User user) {
-        return userStorage.add(user);
+    public void add(User user) {
+        validateUser(user);
+        userStorage.add(user);
     }
 
     public List<User> getUsers() {
@@ -26,28 +28,20 @@ public class UserService {
     }
 
     public User update(User user) {
-        if (isAlreadyExists(user)) {
+        if (userStorage.isAlreadyExists(user.getId())) {
             return userStorage.update(user);
-        } else if (!isAlreadyExists(user) && (user.getId() != 0)) {
+        } else if (!userStorage.isAlreadyExists(user.getId()) && (user.getId() != 0)) {
             throw new NotFoundException("Пользователя с id = " + user.getId() + " нет.");
         } else {
             return userStorage.add(user);
         }
     }
 
-    public boolean isAlreadyExists(User user) {
-        return userStorage.isAlreadyExists(user);
-    }
-
-    public Map<Long, User> getUsersMap() {
-        return userStorage.getUsersMap();
-    }
-
     public User addFriend(long id, long friendId) {
-        if (!getUsersMap().containsKey(id)) {
+        if (!userStorage.isAlreadyExists(id)) {
             throw new NotFoundException("Пользователя с id = " + id + " нет.");
         }
-        if (!getUsersMap().containsKey(friendId)) {
+        if (!userStorage.isAlreadyExists(friendId)) {
             throw new NotFoundException("Пользователя с id = " + friendId + " нет.");
         }
         User user = getUserById(id);
@@ -59,9 +53,9 @@ public class UserService {
 
     public User deleteFriend(long id, long friendId) {
         User user = getUserById(id);
-        if (getUsersMap().containsKey(id) && getUsersMap().containsKey(friendId)) {
+        if (userStorage.isAlreadyExists(id) && userStorage.isAlreadyExists(friendId)) {
             user.getFriends().remove(friendId);
-        } else if (!getUsersMap().containsKey(id)) {
+        } else if (!userStorage.isAlreadyExists(id)) {
             throw new NotFoundException("Пользователя с id = " + id + " нет.");
         } else {
             throw new NotFoundException("Пользователя с friendId = " + friendId + " нет.");
@@ -87,7 +81,6 @@ public class UserService {
     }
 
     public User getUserById(long id) {
-
         return userStorage.getUserById(id);
     }
 
@@ -99,5 +92,17 @@ public class UserService {
         return user.getFriends().stream()
                 .map(userStorage::getUserById)
                 .collect(Collectors.toList());
+    }
+
+    private void validateUser(User user) {
+        if ((user.getEmail().isEmpty()) || (!user.getEmail().contains("@"))) {
+            throw new ValidationException("E-mail is empty or not contains symbol \"@\"");
+        }
+        if ((user.getLogin().isEmpty()) || user.getLogin().contains(" ")) {
+            throw new ValidationException("Login is empty or contains a space");
+        }
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            throw new ValidationException("Date of birth cannot be in the future");
+        }
     }
 }

@@ -2,10 +2,8 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @Component
@@ -15,7 +13,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User add(User user) {
-        validateUser(user);
         if (user.getId() == 0 && !users.containsValue(user)) {
             user.setId(currentId);
         }
@@ -34,8 +31,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public boolean isAlreadyExists(User user) {
-        return users.containsKey(user.getId());
+    public boolean isAlreadyExists(long id) {
+        return users.containsKey(id);
     }
 
     @Override
@@ -50,11 +47,6 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Map<Long, User> getUsersMap() {
-        return users;
-    }
-
-    @Override
     public User getUserById(long id) {
         if (!users.containsKey(id)) {
             throw new NotFoundException("Пользователя с id = " + id + " нет.");
@@ -62,15 +54,4 @@ public class InMemoryUserStorage implements UserStorage {
         return users.get(id);
     }
 
-    private void validateUser(User user) {
-        if ((user.getEmail().isEmpty()) || (!user.getEmail().contains("@"))) {
-            throw new ValidationException("E-mail is empty or not contains symbol \"@\"");
-        }
-        if ((user.getLogin().isEmpty()) || user.getLogin().contains(" ")) {
-            throw new ValidationException("Login is empty or contains a space");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Date of birth cannot be in the future");
-        }
-    }
 }

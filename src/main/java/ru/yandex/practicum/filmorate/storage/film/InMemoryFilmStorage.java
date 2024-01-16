@@ -24,13 +24,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilms() {
+    public List<Film> getAllFilms() {
         return new ArrayList<>(films.values());
     }
 
     @Override
-    public boolean isAlreadyExists(Film film) {
-        return films.containsKey(film.getId());
+    public boolean isAlreadyExists(long id) {
+        return films.containsKey(id);
     }
 
     @Override
@@ -42,11 +42,6 @@ public class InMemoryFilmStorage implements FilmStorage {
             film.setLikes(new HashSet<>());
         }
         return film;
-    }
-
-    @Override
-    public Map<Long, Film> getFilmsMap() {
-        return films;
     }
 
     @Override
@@ -64,4 +59,5 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         return films.get(id);
     }
+
 }

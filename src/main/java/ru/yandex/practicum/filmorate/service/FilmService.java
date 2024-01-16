@@ -16,20 +16,19 @@ import java.util.List;
 @AllArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
-
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
     public Film addLike(long id, long userId) {
-        if (!filmStorage.getFilmsMap().containsKey(id)) {
+        if (!filmStorage.isAlreadyExists(id)) {
             throw new NotFoundException("film с id = " + id + " не найден");
         }
-        Film film = filmStorage.getFilmsMap().get(id);
+        Film film = filmStorage.getFilmById(id);
         film.getLikes().add(userId);
         return film;
     }
 
     public Film deleteLike(long id, long userId) {
-        if (!filmStorage.getFilmsMap().containsKey(id)) {
+        if (!filmStorage.isAlreadyExists(id)) {
             throw new NotFoundException("film с id = " + id + " не найден");
         }
         if (userId < 0) {
@@ -45,22 +44,18 @@ public class FilmService {
     }
 
     public List<Film> getFilms() {
-        return filmStorage.getFilms();
+        return filmStorage.getAllFilms();
     }
 
-    public Film add(Film film) {
+    public void add(Film film) {
         validateFilm(film);
-        return filmStorage.add(film);
-    }
-
-    public boolean isAlreadyExists(Film film) {
-        return filmStorage.isAlreadyExists(film);
+        filmStorage.add(film);
     }
 
     public Film update(Film film) {
-        if (isAlreadyExists(film)) {
+        if (filmStorage.isAlreadyExists(film.getId())) {
             return filmStorage.update(film);
-        } else if (!isAlreadyExists(film) && (film.getId() != 0)) {
+        } else if (!filmStorage.isAlreadyExists(film.getId()) && (film.getId() != 0)) {
             throw new RuntimeException();
         } else {
             return filmStorage.add(film);
