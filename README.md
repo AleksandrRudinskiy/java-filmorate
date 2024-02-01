@@ -8,14 +8,14 @@ Template repository for Filmorate project.
 2) Получение всех пользователей:
    	SELECT *
    	FROM users;
-3) Топ 10 названий наиболее популярных фильмов:
-	SELECT f.film_name, COUNT(user_id) as likes_count
-	FROM films AS f
+3) Топ 10 названий наиболее популярных фильмов:  
+	SELECT f.film_name, COUNT(user_id) as likes_count  
+	FROM films AS f  
 	LEFT JOIN user_likes AS ul ON f.film_id = ul.film_id
 	GROUP BY f.film_name 
 	ORDER BY likes_count DESC
 	LIMIT 10;
-4) Список общих друзей с другим пользователем:
+4) Список общих друзей с другим пользователем:  
 	SELECT *
 	FROM
 	(SELECT friend_id
