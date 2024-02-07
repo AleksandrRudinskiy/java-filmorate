@@ -1,5 +1,5 @@
 # java-filmorate
-## Er диаграмма
+## ER-диаграмма
 ![ER](src/main/resources/Schema_DB_filmorate_1.png)
 ## Примеры запросов
 
