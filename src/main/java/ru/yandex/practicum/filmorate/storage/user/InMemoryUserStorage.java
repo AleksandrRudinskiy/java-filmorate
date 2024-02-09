@@ -55,4 +55,32 @@ public class InMemoryUserStorage implements UserStorage {
         return users.get(id);
     }
 
+    @Override
+    public User addFriend(long id, long friendId) {
+        if (!isAlreadyExists(id)) {
+            throw new NotFoundException("Пользователя с id = " + id + " нет.");
+        }
+        if (!isAlreadyExists(friendId)) {
+            throw new NotFoundException("Пользователя с id = " + friendId + " нет.");
+        }
+        User user = getUserById(id);
+        user.getFriends().add(friendId);
+        User friendUser = getUserById(friendId);
+        friendUser.getFriends().add(id);
+        return  user;
+    }
+
+    @Override
+    public User deleteFriend(long id, long friendId) {
+        User user = getUserById(id);
+        if (isAlreadyExists(id) && isAlreadyExists(friendId)) {
+            user.getFriends().remove(friendId);
+        } else if (!isAlreadyExists(id)) {
+            throw new NotFoundException("Пользователя с id = " + id + " нет.");
+        } else {
+            throw new NotFoundException("Пользователя с friendId = " + friendId + " нет.");
+        }
+        user.getFriends().remove(friendId);
+        return user;
+    }
 }

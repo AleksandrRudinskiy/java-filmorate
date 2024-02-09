@@ -1,14 +1,18 @@
 package ru.yandex.practicum.filmorate.dao;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class GenreDaoImpl implements GenreDao{
+@Slf4j
+@Component
+public class GenreDaoImpl implements GenreDao {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -18,7 +22,18 @@ public class GenreDaoImpl implements GenreDao{
 
     @Override
     public Genre getGenreById(int id) {
-        return null;
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet("select * from genre where genre_id = ?", id);
+        if (userRows.next()) {
+            Genre genre = new Genre(
+                    userRows.getInt("genre_id"),
+                    userRows.getString("name")
+            );
+            log.info("Найден жанр фильма: {} {}", genre.getId(), genre.getName());
+            return genre;
+        } else {
+            log.info("Жанр фильма с идентификатором {} не найден.", id);
+            return null;
+        }
     }
 
     @Override

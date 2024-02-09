@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
@@ -19,7 +20,6 @@ import java.util.Objects;
 @Primary
 @Slf4j
 public class UserDbStorage implements UserStorage {
-
     private final JdbcTemplate jdbcTemplate;
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
@@ -28,22 +28,26 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User add(User user) {
-        jdbcTemplate.update(
-                "insert into users values (?, ?, ?, ?, ?)"
-                , user.getId(), user.getName(), user.getEmail(), user.getLogin(), user.getBirthday());
+        if (user.getName().isEmpty() || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("users")
+                .usingGeneratedKeyColumns("user_id");
+        long id = simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue();
+        user.setId(id);
+        user.setFriends(new HashSet<>(findFriendsByUserId(id)));
         return user;
     }
 
     @Override
     public List<User> getUsers() {
         String sql = "select * from users";
-        List<User> users = jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
-        return users;
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
     }
 
     private User makeUser(ResultSet rs) throws SQLException {
         long userId = rs.getLong("user_id");
-
         return new User(
                 rs.getLong("user_id"),
                 rs.getString("name"),
@@ -57,12 +61,15 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public boolean isAlreadyExists(long id) {
-
-        return findFriendsByUserId(id) != null;
+        return getUserById(id) != null;
     }
 
     @Override
     public User update(User user) {
+        if (user.getName().isEmpty() || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+
         String sql = "update users set name = ?, email = ?, login = ?, birthday = ? WHERE user_id = ? ";
         jdbcTemplate.update(sql, user.getName(), user.getEmail(), user.getLogin(), user.getBirthday(), user.getId());
         return user;
@@ -92,5 +99,19 @@ public class UserDbStorage implements UserStorage {
     public Collection<Long> findFriendsByUserId(long userId) {
         String sql = "select friend_id from user_friends where user_id = ? order by friend_id";
         return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("friend_id"), userId);
+    }
+
+    @Override
+    public User addFriend(long id, long friendId) {
+        String sql = "insert into user_friends (user_id, friend_id, friendship) values (?, ?, 'неподтверждена')";
+        jdbcTemplate.update(sql, id, friendId);
+        return getUserById(id);
+    }
+
+    @Override
+    public User deleteFriend(long id, long friendId) {
+        String sql = "DELETE FROM user_friends WHERE USER_ID  = ? AND friend_id = ?";
+        jdbcTemplate.update(sql, id, friendId);
+        return getUserById(id);
     }
 }

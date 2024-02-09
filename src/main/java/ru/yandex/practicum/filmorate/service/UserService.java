@@ -1,10 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
@@ -35,6 +30,10 @@ public class UserService {
     }
 
     public User update(User user) {
+        if (user.getName().isEmpty() || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+
         if (userStorage.isAlreadyExists(user.getId())) {
             return userStorage.update(user);
         } else if (!userStorage.isAlreadyExists(user.getId()) && (user.getId() != 0)) {
@@ -45,30 +44,12 @@ public class UserService {
     }
 
     public User addFriend(long id, long friendId) {
-        if (!userStorage.isAlreadyExists(id)) {
-            throw new NotFoundException("Пользователя с id = " + id + " нет.");
-        }
-        if (!userStorage.isAlreadyExists(friendId)) {
-            throw new NotFoundException("Пользователя с id = " + friendId + " нет.");
-        }
-        User user = getUserById(id);
-        user.getFriends().add(friendId);
-        User friendUser = getUserById(friendId);
-        friendUser.getFriends().add(id);
-        return user;
+        getUserById(friendId);
+        return userStorage.addFriend(id, friendId);
     }
 
     public User deleteFriend(long id, long friendId) {
-        User user = getUserById(id);
-        if (userStorage.isAlreadyExists(id) && userStorage.isAlreadyExists(friendId)) {
-            user.getFriends().remove(friendId);
-        } else if (!userStorage.isAlreadyExists(id)) {
-            throw new NotFoundException("Пользователя с id = " + id + " нет.");
-        } else {
-            throw new NotFoundException("Пользователя с friendId = " + friendId + " нет.");
-        }
-        user.getFriends().remove(friendId);
-        return user;
+        return userStorage.deleteFriend(id, friendId);
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
@@ -88,6 +69,10 @@ public class UserService {
     }
 
     public User getUserById(long id) {
+        if (userStorage.getUserById(id) == null) {
+            throw new NotFoundException("Пользователя с id " + id + "нет");
+        }
+
         return userStorage.getUserById(id);
     }
 

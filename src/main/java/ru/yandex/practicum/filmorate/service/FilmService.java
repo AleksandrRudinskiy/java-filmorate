@@ -53,6 +53,11 @@ public class FilmService {
     }
 
     public Film update(Film film) {
+       if (getFilmById(film.getId()) == null) {
+           throw new NotFoundException("film с id = " + film.getId() + " не найден");
+       }
+       
+
         if (filmStorage.isAlreadyExists(film.getId())) {
             return filmStorage.update(film);
         } else if (!filmStorage.isAlreadyExists(film.getId()) && (film.getId() != 0)) {

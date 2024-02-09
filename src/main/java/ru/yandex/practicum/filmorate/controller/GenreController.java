@@ -2,9 +2,13 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dao.GenreDao;
+import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
 
@@ -12,16 +16,24 @@ import java.util.List;
 @Slf4j
 @Data
 public class GenreController {
+    private final GenreDao genreDao;
 
-
-    GenreServise
-
+    public GenreController(GenreDao genreDao) {
+        this.genreDao = genreDao;
+    }
 
     @GetMapping("/genres")
     public List<Genre> getGenres() {
         log.info("Accepted GET request to get a list of films genres");
-        List<Genre> genres = userService.getUsers();
-        log.debug("Current number of users: {}", users.size());
-        return users;
+        List<Genre> genres = genreDao.getGenres();
+        log.debug("Current number of genres: {}", genres.size());
+        return genres;
     }
+
+    @GetMapping("/genres/{genreId}")
+    public ResponseEntity<Genre> getUserById(@PathVariable int genreId) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(genreDao.getGenreById(genreId));
+    }
+
 }
