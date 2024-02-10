@@ -45,15 +45,12 @@ public class FilmDbStorage implements FilmStorage {
         }
 
 
-//        if (film.getGenres() != null) {
-//            for (Genre genre : film.getGenres()) {
-//                String sqlGenre = "INSERT INTO genre SELECT ?, ' ' WHERE NOT EXISTS (SELECT genre_id FROM genre WHERE genre_id = ?)";
-//                jdbcTemplate.update(sqlGenre, genre.getId(), genre.getId());
-//
-//                String sqlFilmGenre = "insert into film_genre (film_id, genre_id) values (?, ?)";
-//                jdbcTemplate.update(sqlFilmGenre, id, genre.getId());
-//            }
-        // }
+        if (film.getGenres() != null) {
+            for (Genre genre : film.getGenres()) {
+                String sqlFilmGenre = "insert into film_genre (film_id, genre_id) values (?, ?)";
+                jdbcTemplate.update(sqlFilmGenre, id, genre.getId());
+            }
+         }
 
         log.info("ПОЛУЧЕН СПИСОК ЖАНРОВ ФИЛЬМА: " + film.getGenres());
         film.setLikes(new HashSet<>(findLikesByFilmId(id)));

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
@@ -32,7 +33,7 @@ public class MpaDaoImpl implements MpaDao {
             return mpa;
         } else {
             log.info("Рейтинг (категория) фильма с идентификатором {} не найден.", id);
-            return null;
+            throw new NotFoundException("Рейтин с id =" + id + "не найден.");
         }
     }
 
