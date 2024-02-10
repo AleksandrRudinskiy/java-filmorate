@@ -18,4 +18,6 @@ public interface FilmStorage {
 
     Film getFilmById(long id);
 
+    Film addLike(long id, long userId);
+
 }

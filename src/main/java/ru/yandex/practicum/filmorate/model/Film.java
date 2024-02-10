@@ -25,9 +25,9 @@ public class Film {
     private LocalDate releaseDate;
     private int duration;
 
-    private Set<Long> likes;
-    private List<Genre> genres;
     private Mpa mpa;
+    private List<Genre> genres;
+    private Set<Long> likes;
 
 
 

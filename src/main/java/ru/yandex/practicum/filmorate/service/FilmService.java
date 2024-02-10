@@ -18,14 +18,15 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
+
+
     public Film addLike(long id, long userId) {
-        if (!filmStorage.isAlreadyExists(id)) {
-            throw new NotFoundException("film с id = " + id + " не найден");
-        }
-        Film film = filmStorage.getFilmById(id);
-        film.getLikes().add(userId);
-        return film;
+
+        return filmStorage.addLike(id, userId);
     }
+
+
+
 
     public Film deleteLike(long id, long userId) {
         if (!filmStorage.isAlreadyExists(id)) {

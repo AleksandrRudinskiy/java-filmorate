@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.dao.GenreDao;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.service.GenreService;
 
 import java.util.List;
 
@@ -16,16 +17,16 @@ import java.util.List;
 @Slf4j
 @Data
 public class GenreController {
-    private final GenreDao genreDao;
+    private final GenreService genreService;
 
-    public GenreController(GenreDao genreDao) {
-        this.genreDao = genreDao;
+    public GenreController(GenreService genreService) {
+        this.genreService = genreService;
     }
 
     @GetMapping("/genres")
     public List<Genre> getGenres() {
         log.info("Accepted GET request to get a list of films genres");
-        List<Genre> genres = genreDao.getGenres();
+        List<Genre> genres =genreService.getGenres();
         log.debug("Current number of genres: {}", genres.size());
         return genres;
     }
@@ -33,7 +34,7 @@ public class GenreController {
     @GetMapping("/genres/{genreId}")
     public ResponseEntity<Genre> getUserById(@PathVariable int genreId) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(genreDao.getGenreById(genreId));
+                .body(genreService.getGenreById(genreId));
     }
 
 }

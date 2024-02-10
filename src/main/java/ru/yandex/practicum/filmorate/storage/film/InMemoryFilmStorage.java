@@ -45,6 +45,16 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Film addLike(long id, long userId) {
+        if (!isAlreadyExists(id)) {
+            throw new NotFoundException("film с id = " + id + " не найден");
+        }
+        Film film = getFilmById(id);
+        film.getLikes().add(userId);
+        return film;
+    }
+
+    @Override
     public List<Film> getBestFilms(int count) {
         return films.values().stream()
                 .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
