@@ -31,6 +31,7 @@ public class UserDbStorage implements UserStorage {
         if (user.getName().isEmpty() || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
                 .usingGeneratedKeyColumns("user_id");

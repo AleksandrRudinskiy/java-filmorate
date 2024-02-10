@@ -26,7 +26,7 @@ public class GenreDaoImpl implements GenreDao {
         if (userRows.next()) {
             Genre genre = new Genre(
                     userRows.getInt("genre_id"),
-                    userRows.getString("name")
+                    userRows.getString("genre_name")
             );
             log.info("Найден жанр фильма: {} {}", genre.getId(), genre.getName());
             return genre;
@@ -43,6 +43,6 @@ public class GenreDaoImpl implements GenreDao {
     }
 
     private Genre makeGenre(ResultSet rs) throws SQLException {
-        return new Genre(rs.getInt("genre_id"), rs.getString("name"));
+        return new Genre(rs.getInt("genre_id"), rs.getString("genre_name"));
     }
 }

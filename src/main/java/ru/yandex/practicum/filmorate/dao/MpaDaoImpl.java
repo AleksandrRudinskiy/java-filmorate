@@ -26,7 +26,7 @@ public class MpaDaoImpl implements MpaDao {
         if (userRows.next()) {
             Mpa mpa = new Mpa(
                     userRows.getInt("category_id"),
-                    userRows.getString("name")
+                    userRows.getString("category_name")
             );
             log.info("Найден рейтинг (категория) фильма: {} {}", mpa.getId(), mpa.getName());
             return mpa;
@@ -43,6 +43,6 @@ public class MpaDaoImpl implements MpaDao {
     }
 
     private Mpa makeMpa(ResultSet rs) throws SQLException {
-        return new Mpa(rs.getInt("category_id"), rs.getString("name"));
+        return new Mpa(rs.getInt("category_id"), rs.getString("category_name"));
     }
 }

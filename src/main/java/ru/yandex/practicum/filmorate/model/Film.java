@@ -9,9 +9,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @Builder
@@ -28,7 +26,7 @@ public class Film {
     private int duration;
 
     private Set<Long> likes;
-    private Set<Genre> genres;
+    private List<Genre> genres;
     private Mpa mpa;
 
 
@@ -36,7 +34,7 @@ public class Film {
 
     public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();
-        values.put("name", name);
+        values.put("film_name", name);
         values.put("description", description);
         values.put("releaseDate", releaseDate);
         values.put("duration", duration);

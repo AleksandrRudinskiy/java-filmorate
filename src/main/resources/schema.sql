@@ -28,12 +28,12 @@ CREATE TABLE IF NOT EXISTS user_friends (
 
 CREATE TABLE IF NOT EXISTS genre (
   genre_id integer PRIMARY KEY,
-  name varchar
+  genre_name varchar
 );
 
 CREATE TABLE IF NOT EXISTS category (
   category_id integer PRIMARY KEY,
-  name varchar
+  category_name varchar
 );
 
 CREATE TABLE IF NOT EXISTS film_genre (
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS film_genre (
 
 ALTER TABLE films ADD FOREIGN KEY (category_id) REFERENCES category (category_id);
 
-ALTER TABLE film_genre ADD FOREIGN KEY (genre_id) REFERENCES genre (genre_id);
+ALTER TABLE film_genre ADD FOREIGN KEY (genre_id) REFERENCES genre(genre_id);
 
 ALTER TABLE user_likes ADD FOREIGN KEY (user_id) REFERENCES users (user_id);
 
@@ -52,3 +52,4 @@ ALTER TABLE user_likes ADD FOREIGN KEY (film_id) REFERENCES films (film_id);
 ALTER TABLE user_friends ADD FOREIGN KEY (user_id) REFERENCES users (user_id);
 
 ALTER TABLE film_genre ADD FOREIGN KEY (film_id) REFERENCES films (film_id);
+
