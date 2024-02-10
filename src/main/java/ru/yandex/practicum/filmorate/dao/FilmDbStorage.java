@@ -114,8 +114,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        String sql = "update films set film_name = ?, description = ?, releaseDate = ?, duration = ? WHERE film_id = ? ";
-        jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getId());
+        String sql = "update films set film_name = ?, description = ?, releaseDate = ?, duration = ?, category_id = ? WHERE film_id = ? ";
+        jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
 
         int categoryId = 0;
         long id = film.getId();
@@ -154,7 +154,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getBestFilms(int count) {
-        String sql = "SELECT f.film_id FROM films AS f JOIN user_likes AS ul ON f.FILM_ID  = ul.FILM_ID GROUP BY f.film_id ORDER BY COUNT(user_id) DESC LIMIT ?";
+        String sql = "SELECT f.film_id FROM films AS f LEFT JOIN user_likes AS ul ON f.FILM_ID  = ul.FILM_ID GROUP BY f.film_id ORDER BY COUNT(user_id) DESC LIMIT ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), count);
     }
 
