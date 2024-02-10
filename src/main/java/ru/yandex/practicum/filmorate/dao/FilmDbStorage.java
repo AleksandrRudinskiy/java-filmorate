@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Primary
@@ -50,7 +51,7 @@ public class FilmDbStorage implements FilmStorage {
                 String sqlFilmGenre = "insert into film_genre (film_id, genre_id) values (?, ?)";
                 jdbcTemplate.update(sqlFilmGenre, id, genre.getId());
             }
-         }
+        }
 
         log.info("ПОЛУЧЕН СПИСОК ЖАНРОВ ФИЛЬМА: " + film.getGenres());
         film.setLikes(new HashSet<>(findLikesByFilmId(id)));
@@ -124,32 +125,24 @@ public class FilmDbStorage implements FilmStorage {
             categoryId = film.getMpa().getId();
             film.setMpa(findMpaByCategoryId(categoryId));
         }
-
-
-      //  Set<Genre> updateGenres = new HashSet<>(film.getGenres()); // жанры обновленного фильма
-
-      //  Set<Genre> oldGenres = new HashSet<>(findGenresByFilmId(id)); //сьарый список жанров
-
-        //найди все жанры из старых которые не встречаются в новом
-
-
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
                 String sqlFilmGenre = "insert into film_genre (film_id, genre_id) values (?, ?)";
                 jdbcTemplate.update(sqlFilmGenre, id, genre.getId());
             }
+
+            Set<Integer> idUpdateGenres = film.getGenres().stream().map(Genre::getId).collect(Collectors.toSet());
+            Set<Integer> idOldGenres = findGenresByFilmId(id).stream().map(Genre::getId).collect(Collectors.toSet());
+
+            idOldGenres.removeAll(idUpdateGenres); //теперь в idOldGenres  id жанров которые нужно удалить из базы
+
+            // удаление из БД жанров, которых нет в обновленной версии фильма
+            for (Integer deleteGenreId : idOldGenres) {
+                String newSql = "DELETE FROM film_genre WHERE film_id = ? AND genre_id = ? ";
+                jdbcTemplate.update(newSql, id, deleteGenreId);
+            }
         }
-
-      //  updateGenres.removeAll(oldGenres);
-
-//        if (!updateGenres.isEmpty()) {
-//            for (Genre deleteGenre : updateGenres) {
-//                String newSql = "DELETE FROM film_genre WHERE film_id = ? AND genre_id = ? ";
-//                jdbcTemplate.update(newSql, id, deleteGenre.getId());
-//            }
-//        }
-
-        return film;
+        return getFilmById(id);
     }
 
     @Override
