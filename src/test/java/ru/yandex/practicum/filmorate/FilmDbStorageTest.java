@@ -28,9 +28,7 @@ public class FilmDbStorageTest {
         Film newFilm = new Film(1L, "Some Film", "bla bla bla", LocalDate.of(2000, 12, 1), 98, new Mpa(1), null, null);
         FilmDbStorage filmDbStorage = new FilmDbStorage(jdbcTemplate);
         filmDbStorage.add(newFilm);
-        Assertions.assertEquals(1, filmDbStorage.getAllFilms().size()
-                , "Количество фильмов должно быть 1!");
-
+        Assertions.assertEquals(1, filmDbStorage.getAllFilms().size(), "Количество фильмов должно быть 1!");
     }
 
     @Test
@@ -66,7 +64,6 @@ public class FilmDbStorageTest {
         UserDbStorage userDbStorage = new UserDbStorage(jdbcTemplate);
         userDbStorage.add(newUser);
         filmDbStorage.addLike(4, 1);
-        Assertions.assertEquals(1, filmDbStorage.getFilmById(4).getLikes().size(),
-                "Число лайков должно быть 1!");
+        Assertions.assertEquals(1, filmDbStorage.getFilmById(4).getLikes().size(), "Число лайков должно быть 1!");
     }
 }

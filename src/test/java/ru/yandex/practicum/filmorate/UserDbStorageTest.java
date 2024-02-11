@@ -48,12 +48,9 @@ public class UserDbStorageTest {
         userStorage.add(firstUser);
         userStorage.add(secondUser);
         userStorage.addFriend(firstUser.getId(), secondUser.getId());
-        Assertions.assertEquals(1, userStorage.getUserById(firstUser.getId()).getFriends().size()
-                , "Кол-во друзей должно быть 1.");
+        Assertions.assertEquals(1, userStorage.getUserById(firstUser.getId()).getFriends().size(), "Кол-во друзей должно быть 1.");
         userStorage.deleteFriend(firstUser.getId(), secondUser.getId());
-        Assertions.assertEquals(0, userStorage.getUserById(firstUser.getId()).getFriends().size()
-                , "Кол-во друзей должно быть 0.");
-
+        Assertions.assertEquals(0, userStorage.getUserById(firstUser.getId()).getFriends().size(), "Кол-во друзей должно быть 0.");
     }
 
     @Test
