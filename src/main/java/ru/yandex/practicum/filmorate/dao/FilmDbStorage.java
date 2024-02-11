@@ -106,10 +106,8 @@ public class FilmDbStorage implements FilmStorage {
     public Film update(Film film) {
         String sql = "update films set film_name = ?, description = ?, releaseDate = ?, duration = ?, category_id = ? WHERE film_id = ? ";
         jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
-
         int categoryId = 0;
         long id = film.getId();
-
         if (film.getMpa() != null) {
             categoryId = film.getMpa().getId();
             film.setMpa(findMpaByCategoryId(categoryId));
@@ -119,15 +117,11 @@ public class FilmDbStorage implements FilmStorage {
                 String sqlFilmGenre = "insert into film_genre (film_id, genre_id) values (?, ?)";
                 jdbcTemplate.update(sqlFilmGenre, id, genre.getId());
             }
-
             Set<Integer> idUpdateGenres = film.getGenres().stream().map(Genre::getId).collect(Collectors.toSet());
             Set<Integer> idOldGenres = findGenresByFilmId(id).stream().map(Genre::getId).collect(Collectors.toSet());
-
-            idOldGenres.removeAll(idUpdateGenres); //теперь в idOldGenres  id жанров которые нужно удалить из базы
-
-            // удаление из БД жанров, которых нет в обновленной версии фильма
+            idOldGenres.removeAll(idUpdateGenres);
             for (Integer deleteGenreId : idOldGenres) {
-                String newSql = "DELETE FROM film_genre WHERE film_id = ? AND genre_id = ? ";
+                String newSql = "delete from film_genre where film_id = ? AND genre_id = ? ";
                 jdbcTemplate.update(newSql, id, deleteGenreId);
             }
         }
@@ -153,8 +147,6 @@ public class FilmDbStorage implements FilmStorage {
                     findMpaByCategoryId(userRows.getInt("category_id")),
                     new ArrayList<>(findGenresByFilmId(id)),
                     new HashSet<>(findLikesByFilmId(id))
-
-
             );
             log.info("Найден фильм: {} {}", film.getId(), film.getName());
             return film;
@@ -164,13 +156,10 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-
     @Override
     public Film addLike(long id, long userId) {
         String sql = "insert into user_likes values(?, ?)";
         jdbcTemplate.update(sql, id, userId);
         return null;
     }
-
-
 }

@@ -18,15 +18,9 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
-
-
     public Film addLike(long id, long userId) {
-
         return filmStorage.addLike(id, userId);
     }
-
-
-
 
     public Film deleteLike(long id, long userId) {
         if (!filmStorage.isAlreadyExists(id)) {
@@ -54,11 +48,9 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-       if (getFilmById(film.getId()) == null) {
-           throw new NotFoundException("film с id = " + film.getId() + " не найден");
-       }
-       
-
+        if (getFilmById(film.getId()) == null) {
+            throw new NotFoundException("film с id = " + film.getId() + " не найден");
+        }
         if (filmStorage.isAlreadyExists(film.getId())) {
             return filmStorage.update(film);
         } else if (!filmStorage.isAlreadyExists(film.getId()) && (film.getId() != 0)) {

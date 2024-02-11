@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,12 +16,9 @@ import java.util.List;
 @RestController
 @Slf4j
 @Data
+@AllArgsConstructor
 public class MpaController {
     private final MpaDao mpaDao;
-
-    public MpaController(MpaDao mpaDao) {
-        this.mpaDao = mpaDao;
-    }
 
     @GetMapping("/mpa")
     public List<Mpa> getMpa() {
@@ -35,5 +33,4 @@ public class MpaController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(mpaDao.getMpaById(mpaId));
     }
-
 }
