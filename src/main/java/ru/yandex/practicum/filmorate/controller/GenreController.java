@@ -23,7 +23,7 @@ public class GenreController {
     @GetMapping("/genres")
     public List<Genre> getGenres() {
         log.info("Accepted GET request to get a list of films genres");
-        List<Genre> genres =genreService.getGenres();
+        List<Genre> genres = genreService.getGenres();
         log.debug("Current number of genres: {}", genres.size());
         return genres;
     }
