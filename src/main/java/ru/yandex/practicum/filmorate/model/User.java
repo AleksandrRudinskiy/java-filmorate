@@ -22,7 +22,6 @@ public class User {
     private String email;
     private String login;
     private LocalDate birthday;
-
     private Set<Long> friends;
 
     public Map<String, Object> toMap() {

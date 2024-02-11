@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -59,7 +60,6 @@ public class UserDbStorage implements UserStorage {
         );
     }
 
-
     @Override
     public boolean isAlreadyExists(long id) {
         return getUserById(id) != null;
@@ -70,7 +70,6 @@ public class UserDbStorage implements UserStorage {
         if (user.getName().isEmpty() || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-
         String sql = "update users set name = ?, email = ?, login = ?, birthday = ? WHERE user_id = ? ";
         jdbcTemplate.update(sql, user.getName(), user.getEmail(), user.getLogin(), user.getBirthday(), user.getId());
         return user;
@@ -92,10 +91,9 @@ public class UserDbStorage implements UserStorage {
             return user;
         } else {
             log.info("Пользователь с идентификатором {} не найден.", id);
-            return null;
+            throw new NotFoundException("Пользователь с id = " + id + " не найден.");
         }
     }
-
 
     public Collection<Long> findFriendsByUserId(long userId) {
         String sql = "select friend_id from user_friends where user_id = ? order by friend_id";
@@ -111,7 +109,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User deleteFriend(long id, long friendId) {
-        String sql = "DELETE FROM user_friends WHERE USER_ID  = ? AND friend_id = ?";
+        String sql = "delete from user_friends where user_id  = ? and friend_id = ?";
         jdbcTemplate.update(sql, id, friendId);
         return getUserById(id);
     }

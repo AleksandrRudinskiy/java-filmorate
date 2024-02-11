@@ -160,6 +160,6 @@ public class FilmDbStorage implements FilmStorage {
     public Film addLike(long id, long userId) {
         String sql = "insert into user_likes values(?, ?)";
         jdbcTemplate.update(sql, id, userId);
-        return null;
+        return getFilmById(id);
     }
 }

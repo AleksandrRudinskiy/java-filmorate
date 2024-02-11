@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 
-import java.util.Objects;
-
 @Data
 @Builder
 @AllArgsConstructor
@@ -14,5 +12,4 @@ import java.util.Objects;
 public class Genre {
     private int id;
     private String name;
-
 }

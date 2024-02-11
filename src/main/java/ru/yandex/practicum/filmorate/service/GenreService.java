@@ -9,23 +9,21 @@ import java.util.List;
 
 @Service
 public class GenreService {
-
     private final GenreDao genreDao;
 
     public GenreService(GenreDao genreDao) {
         this.genreDao = genreDao;
     }
 
-
     public List<Genre> getGenres() {
         return genreDao.getGenres();
     }
 
     public Genre getGenreById(int id) {
-        if (genreDao.getGenreById(id)==null) {
+        if (genreDao.getGenreById(id) == null) {
             throw new NotFoundException("Жанр с id = " + id + " не найден.");
         }
-      return   genreDao.getGenreById(id);
+        return genreDao.getGenreById(id);
     }
 
 }

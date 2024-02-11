@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService {
-
-
     private final UserStorage userStorage;
 
     public UserService(UserStorage userStorage) {
@@ -33,7 +31,6 @@ public class UserService {
         if (user.getName().isEmpty() || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-
         if (userStorage.isAlreadyExists(user.getId())) {
             return userStorage.update(user);
         } else if (!userStorage.isAlreadyExists(user.getId()) && (user.getId() != 0)) {
