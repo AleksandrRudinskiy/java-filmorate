@@ -1,4 +1,5 @@
 # java-filmorate
+<<<<<<< add-database
 ## ER-диаграмма
 ![ER](src/main/resources/Schema_DB_filmorate_1.png)
 ## Примеры запросов
@@ -11,6 +12,5 @@ JOIN "user_likes" AS "ul" ON "f"."film_id" = "ul"."film_id"
 GROUP BY ("film_name")
 ORDER BY "count_likes" DESC;
 ```
-### Получение списка общих друзей с другим пользователем
 
-```
+>>>>>>> main
