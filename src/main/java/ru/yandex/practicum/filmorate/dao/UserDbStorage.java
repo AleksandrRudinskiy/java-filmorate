@@ -17,8 +17,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
-@Component
 @Primary
+@Component
 @Slf4j
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;

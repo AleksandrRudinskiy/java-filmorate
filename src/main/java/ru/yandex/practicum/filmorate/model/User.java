@@ -15,7 +15,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 public class User {
-    @EqualsAndHashCode.Exclude
+     @EqualsAndHashCode.Exclude
     private long id;
     private String name;
     @Email
