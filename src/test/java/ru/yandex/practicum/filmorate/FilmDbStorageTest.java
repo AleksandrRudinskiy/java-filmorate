@@ -63,7 +63,7 @@ public class FilmDbStorageTest {
         User newUser = new User(1L, "IvanPetrov", "euser@email.ru", "euser123", LocalDate.of(1990, 1, 1), new HashSet<>());
         UserDbStorage userDbStorage = new UserDbStorage(jdbcTemplate);
         userDbStorage.add(newUser);
-        filmDbStorage.addLike(4, 1);
-        Assertions.assertEquals(1, filmDbStorage.getFilmById(4).getLikes().size(), "Число лайков должно быть 1!");
+        filmDbStorage.addLike(newFilm.getId(), newUser.getId());
+        Assertions.assertEquals(1, filmDbStorage.getFilmById(newFilm.getId()).getLikes().size(), "Число лайков должно быть 1!");
     }
 }
