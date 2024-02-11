@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dao;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,44 +21,33 @@ import java.util.stream.Collectors;
 @Component
 @Primary
 @Slf4j
+@AllArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public Film add(Film film) {
         log.info("выполнен метод add");
-
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("films")
                 .usingGeneratedKeyColumns("film_id");
         long id = simpleJdbcInsert.executeAndReturnKey(film.toMap()).longValue();
         film.setId(id);
         log.info("id фильма = " + id);
-
-
         int categoryId = 0;
         if (film.getMpa() != null) {
             categoryId = film.getMpa().getId();
             film.setMpa(findMpaByCategoryId(categoryId));
         }
-
-
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
                 String sqlFilmGenre = "insert into film_genre (film_id, genre_id) values (?, ?)";
                 jdbcTemplate.update(sqlFilmGenre, id, genre.getId());
             }
         }
-
-        log.info("ПОЛУЧЕН СПИСОК ЖАНРОВ ФИЛЬМА: " + film.getGenres());
+        log.info("Получен список жанров фильма: " + film.getGenres());
         film.setLikes(new HashSet<>(findLikesByFilmId(id)));
         film.setGenres(new ArrayList<>(findGenresByFilmId(id)));
-
-        // update поля category_id
         jdbcTemplate.update("UPDATE films SET category_id = ? WHERE film_id = ?", categoryId, id);
         return film;
     }
@@ -70,17 +60,16 @@ public class FilmDbStorage implements FilmStorage {
 
     private Film makeFilm(ResultSet rs) throws SQLException {
         long id = rs.getLong("film_id");
-        Film film = new Film(
+        return new Film(
                 rs.getLong("film_id"),
                 rs.getString("film_name"),
                 rs.getString("description"),
                 Objects.requireNonNull(rs.getDate("releaseDate")).toLocalDate(),
                 rs.getInt("duration"),
-                findMpaByCategoryId(rs.getInt("category_id")), // дожжен быть id КАТЕГОРИИ а не фильма
+                findMpaByCategoryId(rs.getInt("category_id")),
                 new ArrayList<>(findGenresByFilmId(id)),
                 new HashSet<>(findLikesByFilmId(id))
         );
-        return film;
     }
 
     public Collection<Long> findLikesByFilmId(long filmId) {
@@ -100,11 +89,11 @@ public class FilmDbStorage implements FilmStorage {
                     userRows.getInt("category_id"),
                     userRows.getString("category_name")
             );
-            log.info("Найдена категория (MPA): {}", mpa.getId());
+            log.info("Найдена категория (MPA) фильма: {}", mpa.getId());
             return mpa;
         } else {
             log.info("Категория (MPA) с идентификатором {} не найдена.", categoryId);
-            return new Mpa(0, "");
+            throw new NotFoundException("Категория (MPA) с идентификатором" + categoryId + "не найдена.");
         }
     }
 
