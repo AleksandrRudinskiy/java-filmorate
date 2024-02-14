@@ -31,14 +31,12 @@ public class FilmDbStorage implements FilmStorage {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("films")
                 .usingGeneratedKeyColumns("film_id");
+
         long id = simpleJdbcInsert.executeAndReturnKey(film.toMap()).longValue();
+
         film.setId(id);
         log.info("id фильма = " + id);
-        int categoryId = 0;
-        if (film.getMpa() != null) {
-            categoryId = film.getMpa().getId();
-            film.setMpa(findMpaByCategoryId(categoryId));
-        }
+
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
                 String sqlFilmGenre = "insert into film_genre (film_id, genre_id) values (?, ?)";
@@ -46,9 +44,7 @@ public class FilmDbStorage implements FilmStorage {
             }
         }
         log.info("Получен список жанров фильма: " + film.getGenres());
-        film.setLikes(new HashSet<>(findLikesByFilmId(id)));
         film.setGenres(new ArrayList<>(findGenresByFilmId(id)));
-        jdbcTemplate.update("update films SET category_id = ? WHERE film_id = ?", categoryId, id);
         return film;
     }
 
@@ -67,14 +63,8 @@ public class FilmDbStorage implements FilmStorage {
                 Objects.requireNonNull(rs.getDate("release_date")).toLocalDate(),
                 rs.getInt("duration"),
                 findMpaByCategoryId(rs.getInt("category_id")),
-                new ArrayList<>(findGenresByFilmId(id)),
-                new HashSet<>(findLikesByFilmId(id))
+                new ArrayList<>(findGenresByFilmId(id))
         );
-    }
-
-    public Collection<Long> findLikesByFilmId(long filmId) {
-        String sql = "select user_id from user_likes where film_id = ? order by user_id";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("user_id"), filmId);
     }
 
     public Collection<Genre> findGenresByFilmId(long filmId) {
@@ -145,8 +135,7 @@ public class FilmDbStorage implements FilmStorage {
                     Objects.requireNonNull(userRows.getDate("release_date")).toLocalDate(),
                     userRows.getInt("duration"),
                     findMpaByCategoryId(userRows.getInt("category_id")),
-                    new ArrayList<>(findGenresByFilmId(id)),
-                    new HashSet<>(findLikesByFilmId(id))
+                    new ArrayList<>(findGenresByFilmId(id))
             );
             log.info("Найден фильм: {} {}", film.getId(), film.getName());
             return film;

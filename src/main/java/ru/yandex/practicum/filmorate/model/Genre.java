@@ -8,8 +8,18 @@ import lombok.ToString;
 @Data
 @Builder
 @AllArgsConstructor
-@ToString
 public class Genre {
     private int id;
     private String name;
+
+    public Genre(int id) {
+        this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "Genre{" +
+                "id=" + id +
+                '}';
+    }
 }

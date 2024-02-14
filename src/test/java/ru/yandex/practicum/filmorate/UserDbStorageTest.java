@@ -25,11 +25,9 @@ public class UserDbStorageTest {
     @BeforeEach
     void cleanTable() {
         UserDbStorage userStorage = new UserDbStorage(jdbcTemplate);
-        // log.info("!!!ВЫПОЛНЯЕТСЯ ОЧИСТКА ТАБЛИЦЫ USERS____!!!");
         jdbcTemplate.update("DELETE FROM users");
         jdbcTemplate.update("DELETE FROM user_friends");
         jdbcTemplate.update("DELETE FROM user_likes");
-        // log.info("!!!Кол-во пользователей после очистки {} !!!!!", userStorage.getUsers().size());
     }
 
 

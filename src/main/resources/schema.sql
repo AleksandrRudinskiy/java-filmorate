@@ -53,3 +53,4 @@ ALTER TABLE user_friends ADD FOREIGN KEY (user_id) REFERENCES users (user_id);
 
 ALTER TABLE film_genre ADD FOREIGN KEY (film_id) REFERENCES films (film_id);
 
+ALTER TABLE user_friends ADD FOREIGN KEY (friend_id) REFERENCES users (user_id);

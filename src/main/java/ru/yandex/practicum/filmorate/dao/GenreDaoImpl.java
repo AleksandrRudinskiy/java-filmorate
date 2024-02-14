@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dao;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -12,13 +13,9 @@ import java.util.List;
 
 @Slf4j
 @Component
+@AllArgsConstructor
 public class GenreDaoImpl implements GenreDao {
-
     private final JdbcTemplate jdbcTemplate;
-
-    public GenreDaoImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public Genre getGenreById(int id) {
@@ -37,7 +34,7 @@ public class GenreDaoImpl implements GenreDao {
     }
 
     @Override
-    public List<Genre> getGenres() {
+    public List<Genre> getAllGenres() {
         String sql = "select * from genre";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(rs));
     }

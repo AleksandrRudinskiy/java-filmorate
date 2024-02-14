@@ -8,6 +8,6 @@ public interface GenreDao {
 
     Genre getGenreById(int id);
 
-    List<Genre> getGenres();
+    List<Genre> getAllGenres();
 
 }
