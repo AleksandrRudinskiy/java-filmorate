@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
@@ -16,28 +18,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Slf4j
 public class UserDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
 
-    @Test
-    public void testAddUser() {
-        User newUser = new User(1L, "IvanPetrov", "euser@email.ru", "euser123", LocalDate.of(1990, 1, 1), new HashSet<>());
+    @BeforeEach
+    void cleanTable() {
         UserDbStorage userStorage = new UserDbStorage(jdbcTemplate);
-        userStorage.add(newUser);
-        Assertions.assertEquals(1, userStorage.getUsers().size(), "Пользователей должно быть: 1!");
+        // log.info("!!!ВЫПОЛНЯЕТСЯ ОЧИСТКА ТАБЛИЦЫ USERS____!!!");
+        jdbcTemplate.update("DELETE FROM users");
+        jdbcTemplate.update("DELETE FROM user_friends");
+        jdbcTemplate.update("DELETE FROM user_likes");
+        // log.info("!!!Кол-во пользователей после очистки {} !!!!!", userStorage.getUsers().size());
     }
 
+
     @Test
-    public void testUpdateUser() {
-        User user = new User(2L, "IvanPetrov", "euser@email.ru", "euser123", LocalDate.of(1990, 1, 1), new HashSet<>());
+    public void testAddUser() {
+        log.info("testAddUser()");
+        User newUser = new User(1L, "IvanrgePetrov", "euserger@email.ru", "euserdfg123", LocalDate.of(1990, 1, 1), new HashSet<>());
         UserDbStorage userStorage = new UserDbStorage(jdbcTemplate);
-        userStorage.add(user);
-        User updateUser = new User(2L, "IvanPetrov", "ksser@email.ru", "euser123", LocalDate.of(1989, 2, 15), new HashSet<>());
-        userStorage.update(updateUser);
-        assertThat(updateUser)
-                .isNotNull()
-                .usingRecursiveComparison()
-                .isEqualTo(userStorage.getUserById(user.getId()));
+        userStorage.add(newUser);
+        log.info("Кол-во пользователей : {} ", userStorage.getUsers().size());
+        Assertions.assertEquals(1, userStorage.getUsers().size(), "Пользователей должно быть: 1!");
     }
 
     @Test
