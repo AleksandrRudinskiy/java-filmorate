@@ -35,7 +35,7 @@ public class Film {
         Map<String, Object> values = new HashMap<>();
         values.put("film_name", name);
         values.put("description", description);
-        values.put("releaseDate", releaseDate);
+        values.put("release_date", releaseDate);
         values.put("duration", duration);
         return values;
     }

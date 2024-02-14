@@ -22,14 +22,15 @@ public class MpaController {
 
     @GetMapping("/mpa")
     public List<Mpa> getMpa() {
-        log.info("Accepted GET request to get a list of films categories (MPA)");
+        log.info("GET запрос на получение всех категорий (MPA).");
         List<Mpa> mpas = mpaDao.getMpa();
-        log.debug("Current number of users: {}", mpas.size());
+        log.info("Количество категорий (MPA): {}", mpas.size());
         return mpas;
     }
 
     @GetMapping("/mpa/{mpaId}")
     public ResponseEntity<Mpa> getMpaById(@PathVariable int mpaId) {
+        log.info("GET запрос на получение категории (MPA) по id = {}.", mpaId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(mpaDao.getMpaById(mpaId));
     }

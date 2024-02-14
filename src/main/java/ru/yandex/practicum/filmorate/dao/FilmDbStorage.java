@@ -48,7 +48,7 @@ public class FilmDbStorage implements FilmStorage {
         log.info("Получен список жанров фильма: " + film.getGenres());
         film.setLikes(new HashSet<>(findLikesByFilmId(id)));
         film.setGenres(new ArrayList<>(findGenresByFilmId(id)));
-        jdbcTemplate.update("UPDATE films SET category_id = ? WHERE film_id = ?", categoryId, id);
+        jdbcTemplate.update("update films SET category_id = ? WHERE film_id = ?", categoryId, id);
         return film;
     }
 
@@ -64,7 +64,7 @@ public class FilmDbStorage implements FilmStorage {
                 rs.getLong("film_id"),
                 rs.getString("film_name"),
                 rs.getString("description"),
-                Objects.requireNonNull(rs.getDate("releaseDate")).toLocalDate(),
+                Objects.requireNonNull(rs.getDate("release_date")).toLocalDate(),
                 rs.getInt("duration"),
                 findMpaByCategoryId(rs.getInt("category_id")),
                 new ArrayList<>(findGenresByFilmId(id)),
@@ -104,7 +104,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        String sql = "update films set film_name = ?, description = ?, releaseDate = ?, duration = ?, category_id = ? WHERE film_id = ? ";
+        String sql = "update films set film_name = ?, description = ?, release_date = ?, duration = ?, category_id = ? WHERE film_id = ? ";
         jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
         int categoryId = 0;
         long id = film.getId();
@@ -121,7 +121,7 @@ public class FilmDbStorage implements FilmStorage {
             Set<Integer> idOldGenres = findGenresByFilmId(id).stream().map(Genre::getId).collect(Collectors.toSet());
             idOldGenres.removeAll(idUpdateGenres);
             for (Integer deleteGenreId : idOldGenres) {
-                String newSql = "delete from film_genre where film_id = ? AND genre_id = ? ";
+                String newSql = "delete from film_genre where film_id = ? and genre_id = ? ";
                 jdbcTemplate.update(newSql, id, deleteGenreId);
             }
         }
@@ -130,7 +130,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getBestFilms(int count) {
-        String sql = "SELECT f.film_id FROM films AS f LEFT JOIN user_likes AS ul ON f.FILM_ID  = ul.FILM_ID GROUP BY f.film_id ORDER BY COUNT(user_id) DESC LIMIT ?";
+        String sql = "select f.film_id from films as f left join user_likes as ul on f.film_id  = ul.film_id group by f.film_id order by count(user_id) desc limit ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), count);
     }
 
@@ -142,7 +142,7 @@ public class FilmDbStorage implements FilmStorage {
                     userRows.getLong("film_id"),
                     userRows.getString("film_name"),
                     userRows.getString("description"),
-                    Objects.requireNonNull(userRows.getDate("releaseDate")).toLocalDate(),
+                    Objects.requireNonNull(userRows.getDate("release_date")).toLocalDate(),
                     userRows.getInt("duration"),
                     findMpaByCategoryId(userRows.getInt("category_id")),
                     new ArrayList<>(findGenresByFilmId(id)),
