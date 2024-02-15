@@ -54,6 +54,7 @@ public class UserDbStorageTest {
                 .usingRecursiveComparison()
                 .isEqualTo(newUser);
     }
+
     @Test
     public void testDeleteFriends() {
         User firstUser = new User(8L, "Ivan_Petrov", "ip@email.ru", "ip123", LocalDate.of(1990, 1, 1));
@@ -63,7 +64,7 @@ public class UserDbStorageTest {
         userStorage.add(secondUser);
         User user = userStorage.addFriend(firstUser.getId(), secondUser.getId());
         Assertions.assertEquals(1, user.getFriends().size(), "Кол-во друзей должно быть 1.");
-        User alongUser = userStorage.deleteFriend(firstUser.getId(),secondUser.getId());
+        User alongUser = userStorage.deleteFriend(firstUser.getId(), secondUser.getId());
         Assertions.assertEquals(0, alongUser.getFriends().size(), "Кол-во друзей должно быть 0 после удаления.");
     }
 
@@ -89,7 +90,7 @@ public class UserDbStorageTest {
         userStorage.add(secondUser);
         userStorage.add(thirdUser);
         List<User> userList = List.of(firstUser, secondUser, thirdUser);
-        assertThat( userList)
+        assertThat(userList)
                 .isNotNull()
                 .usingRecursiveComparison()
                 .isEqualTo(userStorage.getUsers());
