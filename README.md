@@ -1,7 +1,7 @@
 # java-filmorate
 
 ## ER-диаграмма
-![ER](Schema_DB_filmorate.png)
+![ER](ER-schema-java-filmorate.png)
 ## Примеры запросов
 ### Получение N наиболее популярных фильмов
 
