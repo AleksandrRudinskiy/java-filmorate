@@ -32,19 +32,17 @@ public class FilmDbStorage implements FilmStorage {
                 .withTableName("films")
                 .usingGeneratedKeyColumns("film_id");
 
-        long id = simpleJdbcInsert.executeAndReturnKey(film.toMap()).longValue();
+        long filmId = simpleJdbcInsert.executeAndReturnKey(film.toMap()).longValue();
 
-        film.setId(id);
-        log.info("id фильма = " + id);
+        film.setId(filmId);
+        log.info("id фильма = " + filmId);
 
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
                 String sqlFilmGenre = "insert into film_genre (film_id, genre_id) values (?, ?)";
-                jdbcTemplate.update(sqlFilmGenre, id, genre.getId());
+                jdbcTemplate.update(sqlFilmGenre, filmId, genre.getId());
             }
         }
-        log.info("Получен список жанров фильма: " + film.getGenres());
-        film.setGenres(new ArrayList<>(findGenresByFilmId(id)));
         return film;
     }
 
@@ -94,14 +92,16 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        String sql = "update films set film_name = ?, description = ?, release_date = ?, duration = ?, category_id = ? WHERE film_id = ? ";
+        String sql = "update films set film_name = ?, description = ?, release_date = ?, duration = ?, category_id = ? where film_id = ? ";
         jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
         int categoryId = 0;
         long id = film.getId();
+
         if (film.getMpa() != null) {
             categoryId = film.getMpa().getId();
             film.setMpa(findMpaByCategoryId(categoryId));
         }
+
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
                 String sqlFilmGenre = "insert into film_genre (film_id, genre_id) values (?, ?)";
