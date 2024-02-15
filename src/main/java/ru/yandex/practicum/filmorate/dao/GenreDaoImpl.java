@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
@@ -28,8 +29,8 @@ public class GenreDaoImpl implements GenreDao {
             log.info("Найден жанр фильма: {} {}", genre.getId(), genre.getName());
             return genre;
         } else {
-            log.info("Жанр фильма с идентификатором {} не найден.", id);
-            return null;
+            log.info("Жанр фильма с id = {} не найден.", id);
+            throw new NotFoundException("Жанр фильма с id = " + id + " не найден.");
         }
     }
 

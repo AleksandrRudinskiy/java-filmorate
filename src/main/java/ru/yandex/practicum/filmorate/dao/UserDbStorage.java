@@ -30,14 +30,12 @@ public class UserDbStorage implements UserStorage {
         if (user.getName().isEmpty() || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
                 .usingGeneratedKeyColumns("user_id");
-        long id = simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue();
-        user.setId(id);
-        user.setFriends(new HashSet<>(findFriendsByUserId(id)));
-        return user;
+        long userId = simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue();
+        user.setId(userId);
+        return getUserById(userId);
     }
 
     @Override
@@ -47,14 +45,12 @@ public class UserDbStorage implements UserStorage {
     }
 
     private User makeUser(ResultSet rs) throws SQLException {
-        long userId = rs.getLong("user_id");
         return new User(
                 rs.getLong("user_id"),
                 rs.getString("name"),
                 rs.getString("email"),
                 rs.getString("login"),
-                Objects.requireNonNull(rs.getDate("birthday")).toLocalDate(),
-                new HashSet<>(findFriendsByUserId(userId))
+                Objects.requireNonNull(rs.getDate("birthday")).toLocalDate()
         );
     }
 
@@ -68,9 +64,9 @@ public class UserDbStorage implements UserStorage {
         if (user.getName().isEmpty() || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        String sql = "update users set name = ?, email = ?, login = ?, birthday = ? WHERE user_id = ? ";
+        String sql = "update users set name = ?, email = ?, login = ?, birthday = ? where user_id = ? ";
         jdbcTemplate.update(sql, user.getName(), user.getEmail(), user.getLogin(), user.getBirthday(), user.getId());
-        return user;
+        return getUserById(user.getId());
     }
 
     @Override
@@ -82,9 +78,9 @@ public class UserDbStorage implements UserStorage {
                     userRows.getString("name"),
                     userRows.getString("email"),
                     userRows.getString("login"),
-                    Objects.requireNonNull(userRows.getDate("birthday")).toLocalDate(),
-                    new HashSet<>(findFriendsByUserId(id))
+                    Objects.requireNonNull(userRows.getDate("birthday")).toLocalDate()
             );
+            user.setFriends(new HashSet<>(findFriendsByUserId(id)));
             log.info("Найден пользователь: {} {}", user.getId(), user.getName());
             return user;
         } else {
@@ -93,14 +89,9 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
-    public Collection<Long> findFriendsByUserId(long userId) {
-        String sql = "select friend_id from user_friends where user_id = ? order by friend_id";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("friend_id"), userId);
-    }
-
     @Override
     public User addFriend(long id, long friendId) {
-        String sql = "insert into user_friends (user_id, friend_id, friendship) values (?, ?, 'неподтверждена')";
+        String sql = "insert into user_friends values (?, ?, 'неподтверждена')";
         jdbcTemplate.update(sql, id, friendId);
         return getUserById(id);
     }
@@ -110,5 +101,10 @@ public class UserDbStorage implements UserStorage {
         String sql = "delete from user_friends where user_id  = ? and friend_id = ?";
         jdbcTemplate.update(sql, id, friendId);
         return getUserById(id);
+    }
+
+    private Collection<Long> findFriendsByUserId(long userId) {
+        String sql = "select friend_id from user_friends where user_id = ? order by friend_id";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("friend_id"), userId);
     }
 }
