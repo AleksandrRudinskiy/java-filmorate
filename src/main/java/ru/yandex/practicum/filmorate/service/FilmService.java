@@ -18,8 +18,8 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
-    public Film addLike(long id, long userId) {
-        return filmStorage.addLike(id, userId);
+    public void addLike(long id, long userId) {
+        filmStorage.addLike(id, userId);
     }
 
     public Film deleteLike(long id, long userId) {

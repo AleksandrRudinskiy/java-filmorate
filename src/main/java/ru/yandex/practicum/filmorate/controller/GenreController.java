@@ -22,7 +22,7 @@ public class GenreController {
 
     @GetMapping("/genres")
     public List<Genre> getGenres() {
-        log.info("GET запрос на получение всех жанров.");
+        log.info("GET-запрос на получение всех жанров.");
         List<Genre> genres = genreService.getGenres();
         log.info("Количество жанров: {}.", genres.size());
         return genres;
@@ -30,7 +30,7 @@ public class GenreController {
 
     @GetMapping("/genres/{genreId}")
     public ResponseEntity<Genre> getUserById(@PathVariable int genreId) {
-        log.info("GET запрос на получение жанра по id = {}.", genreId);
+        log.info("GET-запрос на получение жанра по id = {}.", genreId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(genreService.getGenreById(genreId));
     }

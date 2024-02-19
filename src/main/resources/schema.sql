@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS user_likes (
 CREATE TABLE IF NOT EXISTS user_friends (
   user_id integer,
   friend_id integer,
-  friendship char(20)
+  friendship boolean
 );
 
 CREATE TABLE IF NOT EXISTS genre (

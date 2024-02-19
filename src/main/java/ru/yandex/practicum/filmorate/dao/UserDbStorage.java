@@ -13,10 +13,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Primary
 @Component
@@ -40,8 +37,25 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getUsers() {
-        String sql = "select * from users";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
+        String sql = "SELECT DISTINCT u.USER_ID, u.NAME , u.EMAIL , u.LOGIN , u.BIRTHDAY , uf.FRIEND_ID\n" +
+                "FROM USERS u\n" +
+                "LEFT JOIN USER_FRIENDS uf ON u.USER_ID = uf.USER_ID";
+        List<User> users = jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
+        Map<Long, User> userMap = new HashMap<>();
+        for (User user : users) {
+            userMap.put(user.getId(), user);
+        }
+        List<UserDbFriends> userDbFriends = jdbcTemplate.query(sql, (rs, rowNum) -> new UserDbFriends(rs.getLong("user_id"), rs.getLong("friend_id")));
+        Map<Long, Set<Long>> userFriends = new HashMap<>();
+        for (UserDbFriends userDbFriend : userDbFriends) {
+            userFriends.put(userDbFriend.getUserId(), new HashSet<>());
+            if (userFriends.containsKey(userDbFriend.getUserId()) && userDbFriend.getFriendId() != 0) {
+                userFriends.get(userDbFriend.getUserId()).add(userDbFriend.getFriendId());
+            }
+        }
+        List<User> users1 = new ArrayList<>(userMap.values());
+        users1.forEach(u -> u.setFriends(userFriends.get(u.getId())));
+        return users1;
     }
 
     private User makeUser(ResultSet rs) throws SQLException {
@@ -91,7 +105,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User addFriend(long id, long friendId) {
-        String sql = "insert into user_friends values (?, ?, 'неподтверждена')";
+        String sql = "insert into user_friends values (?, ?, false)";
         jdbcTemplate.update(sql, id, friendId);
         return getUserById(id);
     }
@@ -103,8 +117,14 @@ public class UserDbStorage implements UserStorage {
         return getUserById(id);
     }
 
-    private Collection<Long> findFriendsByUserId(long userId) {
+    private List<Long> findFriendsByUserId(long userId) {
         String sql = "select friend_id from user_friends where user_id = ? order by friend_id";
         return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("friend_id"), userId);
+    }
+
+    @Override
+    public List<User> getUsersFriends(long id) {
+        String sql = "select * from users where user_id in (select friend_id from user_friends where user_id = ? order by friend_id)";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id);
     }
 }

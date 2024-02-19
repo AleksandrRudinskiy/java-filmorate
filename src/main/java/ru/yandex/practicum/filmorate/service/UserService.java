@@ -39,7 +39,8 @@ public class UserService {
     }
 
     public User addFriend(long id, long friendId) {
-        getUserById(friendId);
+        userStorage.isAlreadyExists(id);
+        userStorage.isAlreadyExists(friendId);
         return userStorage.addFriend(id, friendId);
     }
 
@@ -64,11 +65,11 @@ public class UserService {
     }
 
     public User getUserById(long id) {
-        if (userStorage.getUserById(id) == null) {
+        User user = userStorage.getUserById(id);
+        if (user == null) {
             throw new NotFoundException("Пользователя с id " + id + "нет");
         }
-
-        return userStorage.getUserById(id);
+        return user;
     }
 
     public List<User> getUsersFriends(long id) {
@@ -76,9 +77,7 @@ public class UserService {
         if (user == null) {
             throw new NotFoundException("Пользователя с id = " + id + " нет.");
         }
-        return user.getFriends().stream()
-                .map(userStorage::getUserById)
-                .collect(Collectors.toList());
+        return userStorage.getUsersFriends(id);
     }
 
     private void validateUser(User user) {

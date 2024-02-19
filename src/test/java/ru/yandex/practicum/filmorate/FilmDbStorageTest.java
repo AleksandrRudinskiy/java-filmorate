@@ -26,7 +26,6 @@ public class FilmDbStorageTest {
         FilmDbStorage filmDbStorage = new FilmDbStorage(jdbcTemplate);
         filmDbStorage.add(newFilm);
         Assertions.assertEquals(1, filmDbStorage.getAllFilms().size(), "Количество фильмов должно быть 1!");
-
         assertThat(newFilm)
                 .isNotNull()
                 .usingRecursiveComparison()

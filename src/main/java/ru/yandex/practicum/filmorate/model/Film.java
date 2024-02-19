@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Film {
     @EqualsAndHashCode.Exclude
     private long id;
