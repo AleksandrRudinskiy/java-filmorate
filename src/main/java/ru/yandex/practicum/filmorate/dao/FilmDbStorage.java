@@ -66,7 +66,7 @@ public class FilmDbStorage implements FilmStorage {
             }
         }
         films.forEach(i -> i.setGenres(filmsGenres.get(i.getId())));
-        return films.stream().toList();
+        return new ArrayList<>(films);
     }
 
     @Override

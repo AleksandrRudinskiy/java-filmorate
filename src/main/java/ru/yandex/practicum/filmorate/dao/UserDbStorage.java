@@ -37,9 +37,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getUsers() {
-        String sql = "SELECT DISTINCT u.USER_ID, u.NAME , u.EMAIL , u.LOGIN , u.BIRTHDAY , uf.FRIEND_ID\n" +
-                "FROM USERS u\n" +
-                "LEFT JOIN USER_FRIENDS uf ON u.USER_ID = uf.USER_ID";
+        String sql = "select distinct u.user_id, u.name , u.email , u.login , u.birthday , uf.friend_id from users u left join user_friends uf on u.user_id = uf.user_id";
         List<User> users = jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
         Map<Long, User> userMap = new HashMap<>();
         for (User user : users) {
