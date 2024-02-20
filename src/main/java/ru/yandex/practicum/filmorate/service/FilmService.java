@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
