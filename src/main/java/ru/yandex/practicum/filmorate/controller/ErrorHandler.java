@@ -16,7 +16,7 @@ public class ErrorHandler {
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<Map<String, String>> handleValidationException(final ValidationException e) {
-        log.info("400 Ошибка валидации: {}", e.getMessage());
+        log.error("400 Ошибка валидации: {}", e.getMessage());
         return new ResponseEntity<>(
                 Map.of("error", "Ошибка валидации.",
                         "errorMessage", e.getMessage()),
@@ -26,7 +26,7 @@ public class ErrorHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleException(final RuntimeException e) {
-        log.info("500 Ошибка: {}", e.getMessage());
+        log.error("500 Ошибка: {}", e.getMessage());
         return new ResponseEntity<>(
                 Map.of("error", "Ошибка.",
                         "errorMessage", e.getMessage()),
@@ -36,7 +36,7 @@ public class ErrorHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotFoundException(final NotFoundException e) {
-        log.info("404 Не найден id: {}", e.getMessage());
+        log.error("404 Не найден id: {}", e.getMessage());
         return new ResponseEntity<>(
                 Map.of("error", "Не найден id.",
                         "errorMessage", e.getMessage()),

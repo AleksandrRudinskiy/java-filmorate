@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @Slf4j
-@Data
 @AllArgsConstructor
 public class MpaController {
     private final MpaDao mpaDao;

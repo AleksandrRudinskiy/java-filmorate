@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-@Getter
 @AllArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;

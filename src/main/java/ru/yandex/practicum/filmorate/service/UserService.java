@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -49,19 +48,9 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
-        User firstUser = getUserById(id);
-        if (firstUser == null) {
-            throw new NotFoundException("Пользователя с id = " + id + " нет.");
-        }
-        User secondUser = getUserById(otherId);
-        if (secondUser == null) {
-            throw new NotFoundException("Пользователя с id = " + otherId + " нет.");
-        }
-        return firstUser.getFriends()
-                .stream()
-                .filter(f -> secondUser.getFriends().contains(f))
-                .map(userStorage::getUserById)
-                .collect(Collectors.toList());
+        userStorage.isAlreadyExists(id);
+        userStorage.isAlreadyExists(otherId);
+        return userStorage.getCommonFriends(id, otherId);
     }
 
     public User getUserById(long id) {

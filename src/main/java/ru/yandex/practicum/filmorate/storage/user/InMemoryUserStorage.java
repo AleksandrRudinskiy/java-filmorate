@@ -94,4 +94,21 @@ public class InMemoryUserStorage implements UserStorage {
                 .map(this::getUserById)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<User> getCommonFriends(long id, long otherId) {
+        User firstUser = getUserById(id);
+        if (firstUser == null) {
+            throw new NotFoundException("Пользователя с id = " + id + " нет.");
+        }
+        User secondUser = getUserById(otherId);
+        if (secondUser == null) {
+            throw new NotFoundException("Пользователя с id = " + otherId + " нет.");
+        }
+        return firstUser.getFriends()
+                .stream()
+                .filter(f -> secondUser.getFriends().contains(f))
+                .map(this::getUserById)
+                .collect(Collectors.toList());
+    }
 }

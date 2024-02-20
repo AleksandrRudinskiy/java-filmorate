@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @Slf4j
-@Data
 @AllArgsConstructor
 public class GenreController {
     private final GenreService genreService;

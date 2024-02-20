@@ -125,4 +125,16 @@ public class UserDbStorage implements UserStorage {
         String sql = "select * from users where user_id in (select friend_id from user_friends where user_id = ? order by friend_id)";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id);
     }
+
+    @Override
+    public List<User> getCommonFriends(long id, long otherId) {
+        isAlreadyExists(id);
+        isAlreadyExists(otherId);
+        String sql = "select * from users \n" +
+                "where user_id = \n" +
+                "(select  uf.friend_id from \n" +
+                "(select friend_id from user_friends where user_id = ?) as tt \n" +
+                "inner  join (select friend_id from user_friends where user_id = ?) uf on uf.friend_id = tt.friend_id)";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id, otherId);
+    }
 }
