@@ -1,67 +1,74 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.model.UserService;
-import ru.yandex.practicum.filmorate.model.ValidationException;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @Slf4j
+@AllArgsConstructor
 public class UserController {
-
     private final UserService userService;
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping("/users")
     public List<User> findAllUsers() {
+        log.info("GET-запрос на получение списка всех пользователей.");
         List<User> users = userService.getUsers();
-        log.info("Accepted GET request to get a list of all users");
-        log.debug("Current number of users: {}", users.size());
+        log.info("Текущее количество пользователей: {}.", users.size());
         return users;
+    }
+
+    @GetMapping("/users/{id}/friends")
+    public List<User> getUsersFriends(@PathVariable long id) {
+        log.info("GET-Запрос на получение друзей пользователя с id = {}.", id);
+        return userService.getUsersFriends(id);
+    }
+
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        log.info("GET-Запрос на получение общих друзей пользователей с id = {} и otherId = {}.", id, otherId);
+        return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<User> getUserById(@PathVariable long userId) {
+        log.info("GET-Запрос на получение пользователя по id = {}.", userId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.getUserById(userId));
     }
 
     @PostMapping(value = "/users")
     public User createUser(@Valid @RequestBody User user) {
-        validateUser(user);
+        log.info("POST-Запрос на добавление пользователя.");
         userService.add(user);
         return user;
     }
 
     @PutMapping("/users")
-    public User updateUser(@Valid @RequestBody User user, HttpServletResponse response) {
-        validateUser(user);
-        if (userService.isAlreadyExists(user)) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return userService.update(user);
-        } else if (!userService.isAlreadyExists(user) && (user.getId() != 0)) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return user;
-        } else {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return userService.add(user);
-        }
+    public ResponseEntity<User> updateUser(@RequestBody User user) {
+        log.info("PUT-Запрос на обновление пользователя.");
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.update(user));
     }
 
-    private void validateUser(User user) {
-        if ((user.getEmail().isEmpty()) || (!user.getEmail().contains("@"))) {
-            throw new ValidationException("E-mail is empty or not contains symbol \"@\"");
-        }
-        if ((user.getLogin().isEmpty()) || user.getLogin().contains(" ")) {
-            throw new ValidationException("Login is empty or contains a space");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Date of birth cannot be in the future");
-        }
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public ResponseEntity<User> addFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("PUT-Запрос на добавление в друзья пользователя friendId = {} от пользователя id = {}.", friendId, id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.addFriend(id, friendId));
+    }
+
+    @DeleteMapping("/users/{id}/friends/{friendId}")
+    public ResponseEntity<User> deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("DELETE-Удаление пользователя friendId = {} из друзей пользователя id = {}.", friendId, id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.deleteFriend(id, friendId));
     }
 }

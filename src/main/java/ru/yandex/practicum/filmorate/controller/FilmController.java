@@ -1,72 +1,71 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmService;
-import ru.yandex.practicum.filmorate.model.ValidationException;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
-import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @Slf4j
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class FilmController {
     private final FilmService filmService;
-    private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
     @GetMapping("/films")
     public List<Film> findAllFilms() {
-
+        log.info("GET-Запрос на получение всех фильмов.");
         List<Film> films = filmService.getFilms();
-        log.info("Accepted GET request to get a list of all movies");
-        log.info("Current number of films: {}", films.size());
+        log.info("Количество фильмов: {}.", films.size());
         return films;
     }
 
+    @GetMapping("/films/popular")
+    public List<Film> findBestFilms(
+            @RequestParam(defaultValue = "10", required = false) Integer count) {
+        log.info("GET-Запрос на получение топ-списка {} фильмов.", count);
+        return filmService.getBestFilms(count);
+    }
+
+    @GetMapping("/films/{filmId}")
+    public ResponseEntity<Film> getFilmById(@PathVariable int filmId) {
+        log.info("GET-Запрос на получение фильма по id = {}.", filmId);
+        return ResponseEntity.status(HttpStatus.OK).body(filmService.getFilmById(filmId));
+    }
+
     @PostMapping(value = "/films")
-    public Film createFilm(@RequestBody Film film) {
-        validateFilm(film);
-        log.info("Film " + film.getName() + " added");
+    public ResponseEntity<Film> createFilm(@RequestBody Film film) {
+        log.info("POST-запрос на добавление фильма.");
         filmService.add(film);
-        return film;
+        log.info("Фильм с названием {} добавлен.", film.getName());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(film);
     }
 
     @PutMapping("/films")
-    public Film updateFilm(@RequestBody Film film, HttpServletResponse response) {
-        validateFilm(film);
-        log.info("Film is valid :" + film.getName());
-        if (filmService.isAlreadyExists(film)) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return filmService.update(film);
-        } else if (!filmService.isAlreadyExists(film) && (film.getId() != 0)) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return film;
-        } else {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return filmService.add(film);
-        }
-
+    public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
+        log.info("PUT-запрос на обновление фильма с id = {}.", film.getId());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(filmService.update(film));
     }
 
-    @ExceptionHandler({ValidationException.class})
-    private void validateFilm(Film film) {
-        if (film.getName().isEmpty() || film.getName().isBlank()) {
-            throw new ValidationException("The name is empty");
-        }
-        if (film.getDescription().length() > 200) {
-            throw new ValidationException("The description length more than 200 symbols");
-        }
-        if (film.getReleaseDate().isBefore(startReleaseDate)) {
-            throw new ValidationException("Release date earlier than 28-12-1895");
-        }
-        if (film.getDuration() < 0) {
-            throw new ValidationException("Film duration is negative");
-        }
+    @PutMapping("/films/{filmId}/like/{userId}")
+    public void addLike(@PathVariable long filmId, @PathVariable long userId) {
+        log.info("PUT-Запрос за лайк фильму с filmId = {} от пользователя с userId = {}.", filmId, userId);
+        filmService.addLike(filmId, userId);
+        ResponseEntity.status(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/films/{filmId}/like/{userId}")
+    public ResponseEntity<Film> deleteLike(@PathVariable long filmId, @PathVariable long userId) {
+        log.info("DELETE-Запрос на удаление лайка фильма с filmId = {} от пользователя с userId = {}.", filmId, userId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(filmService.deleteLike(filmId, userId));
     }
 }
