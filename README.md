@@ -1,5 +1,8 @@
 # java-filmorate
 
+## Канбан-доска
+https://miro.com/app/board/uXjVNkkgjAk=/
+
 ## ER-диаграмма
 ![ER](ER-schema-java-filmorate.png)
 ## Примеры запросов
