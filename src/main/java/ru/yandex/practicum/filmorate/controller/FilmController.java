@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @Slf4j
-@Getter
 @AllArgsConstructor
 public class FilmController {
     private final FilmService filmService;
