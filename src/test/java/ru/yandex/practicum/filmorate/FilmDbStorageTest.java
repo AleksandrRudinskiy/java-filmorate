@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,11 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
+    private final UserStorage userStorage;
 
     @Test
     void testAddFilm() {
         Film newFilm = new Film(1L, "Some Film", "bla bla bla", LocalDate.of(2000, 12, 1), 98, new Mpa(1, "G"), new ArrayList<>());
-        FilmDbStorage filmDbStorage = new FilmDbStorage(jdbcTemplate);
+        FilmDbStorage filmDbStorage = new FilmDbStorage(jdbcTemplate, userStorage);
         filmDbStorage.add(newFilm);
         Assertions.assertEquals(1, filmDbStorage.getAllFilms().size(), "Количество фильмов должно быть 1!");
         assertThat(newFilm)
@@ -35,7 +37,7 @@ public class FilmDbStorageTest {
     @Test
     void testGetFilmById() {
         Film newFilm = new Film(2L, "Some Film", "bla bla bla", LocalDate.of(2000, 12, 1), 98, new Mpa(1, "G"), new ArrayList<>());
-        FilmDbStorage filmDbStorage = new FilmDbStorage(jdbcTemplate);
+        FilmDbStorage filmDbStorage = new FilmDbStorage(jdbcTemplate, userStorage);
         filmDbStorage.add(newFilm);
         Film film = filmDbStorage.getFilmById(newFilm.getId());
         assertThat(newFilm)

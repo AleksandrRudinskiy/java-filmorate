@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final UserStorage userStorage;
 
     @Override
     public Film add(Film film) {
@@ -49,7 +51,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getAllFilms() {
         String sql = "select distinct f.film_id, f.film_name, f.description, f.release_date, f.duration, f.category_id, genre_id from films as f left join film_genre as fg on fg.film_id = f.film_id";
 
-        List<Film> filmsList = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
+        List<Film> filmsList = jdbcTemplate.query(sql, this::makeFilm);
         List<FilmsDbGenres> filmDbGenres = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmDbGenres(rs));
 
         Map<Long, Film> filmsMap = new HashMap<>();
@@ -67,6 +69,19 @@ public class FilmDbStorage implements FilmStorage {
         }
         films.forEach(i -> i.setGenres(filmsGenres.get(i.getId())));
         return new ArrayList<>(films);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+        String sql =
+                "SELECT f.* " +
+                        "FROM films AS f " +
+                        "JOIN user_likes AS ul_1 ON f.film_id = ul_1.film_id " +
+                        "JOIN user_likes AS ul_2 ON f.film_id = ul_2.film_id " +
+                        "WHERE ul_1.user_id = ? AND ul_2.user_id = ?;";
+        return jdbcTemplate.query(sql, this::makeFilm, userId, friendId);
     }
 
     @Override
@@ -129,6 +144,14 @@ public class FilmDbStorage implements FilmStorage {
         return getFilmById(id);
     }
 
+    @Override
+    public Film deleteLike(long id, long userId) {
+        userStorage.getUserById(userId);
+        String sql = "DELETE FROM user_likes WHERE film_id = ? AND user_id = ?";
+        jdbcTemplate.update(sql, id, userId);
+        return getFilmById(id);
+    }
+
     private Collection<Genre> findGenresByFilmId(long filmId) {
         String sql = "select distinct * from (select genre_id from film_genre where film_id = ? order by genre_id) as t join genre as g on t.genre_id = g.genre_id";
         return jdbcTemplate.query(sql, (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("genre_name")), filmId);
@@ -168,7 +191,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private Film makeFilm(ResultSet rs) throws SQLException {
+    private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         long id = rs.getLong("film_id");
         return new Film(
                 rs.getLong("film_id"),

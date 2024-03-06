@@ -10,6 +10,8 @@ public interface FilmStorage {
 
     List<Film> getAllFilms();
 
+    List<Film> getCommonFilms(int userId, int friendId);
+
     boolean isAlreadyExists(long id);
 
     Film update(Film film);
@@ -20,4 +22,5 @@ public interface FilmStorage {
 
     Film addLike(long id, long userId);
 
+    Film deleteLike(long id, long userId);
 }

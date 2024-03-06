@@ -21,15 +21,19 @@ public class FilmService {
     }
 
     public Film deleteLike(long id, long userId) {
-        if (!filmStorage.isAlreadyExists(id)) {
-            throw new NotFoundException("film с id = " + id + " не найден");
-        }
-        if (userId < 0) {
-            throw new NotFoundException("Неверный id пользователя");
-        }
-        Film film = getFilmById(id);
+        Film film = filmStorage.getFilmById(id);
         film.getLikes().remove(userId);
-        return film;
+        return filmStorage.deleteLike(id, userId);
+//
+//        if (!filmStorage.isAlreadyExists(id)) {
+//            throw new NotFoundException("film с id = " + id + " не найден");
+//        }
+//        if (userId < 0) {
+//            throw new NotFoundException("Неверный id пользователя");
+//        }
+//        Film film = getFilmById(id);
+//        film.getLikes().remove(userId);
+//        return film;
     }
 
     public List<Film> getBestFilms(int count) {
@@ -38,6 +42,10 @@ public class FilmService {
 
     public List<Film> getFilms() {
         return filmStorage.getAllFilms();
+    }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
     public void add(Film film) {

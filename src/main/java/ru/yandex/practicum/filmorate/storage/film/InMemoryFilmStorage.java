@@ -55,6 +55,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Film deleteLike(long id, long userId) {
+        //TODO
+        return null;
+    }
+
+    @Override
     public List<Film> getBestFilms(int count) {
         return films.values().stream()
                 .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
@@ -68,5 +74,11 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new NotFoundException("film с id = " + id + " не найден");
         }
         return films.get(id);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        //TODO
+        return null;
     }
 }

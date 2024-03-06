@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -36,6 +36,13 @@ public class FilmController {
     public ResponseEntity<Film> getFilmById(@PathVariable int filmId) {
         log.info("GET-Запрос на получение фильма по id = {}.", filmId);
         return ResponseEntity.status(HttpStatus.OK).body(filmService.getFilmById(filmId));
+    }
+
+    @GetMapping(value = "/films/common", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getCommonFilms(@RequestParam int userId, @RequestParam int friendId) {
+        log.info("GET-Запрос на получение общих фильмов двух пользователей.");
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     @PostMapping(value = "/films")
