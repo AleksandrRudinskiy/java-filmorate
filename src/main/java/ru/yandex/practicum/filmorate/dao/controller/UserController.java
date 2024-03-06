@@ -1,0 +1,74 @@
+package ru.yandex.practicum.filmorate.dao.controller;
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dao.model.User;
+import ru.yandex.practicum.filmorate.dao.service.UserService;
+
+import javax.validation.Valid;
+import java.util.List;
+
+@RestController
+@Slf4j
+@AllArgsConstructor
+public class UserController {
+    private final UserService userService;
+
+    @GetMapping("/users")
+    public List<User> findAllUsers() {
+        log.info("GET-запрос на получение списка всех пользователей.");
+        List<User> users = userService.getUsers();
+        log.info("Текущее количество пользователей: {}.", users.size());
+        return users;
+    }
+
+    @GetMapping("/users/{id}/friends")
+    public List<User> getUsersFriends(@PathVariable long id) {
+        log.info("GET-Запрос на получение друзей пользователя с id = {}.", id);
+        return userService.getUsersFriends(id);
+    }
+
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        log.info("GET-Запрос на получение общих друзей пользователей с id = {} и otherId = {}.", id, otherId);
+        return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<User> getUserById(@PathVariable long userId) {
+        log.info("GET-Запрос на получение пользователя по id = {}.", userId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.getUserById(userId));
+    }
+
+    @PostMapping(value = "/users")
+    public User createUser(@Valid @RequestBody User user) {
+        log.info("POST-Запрос на добавление пользователя.");
+        userService.add(user);
+        return user;
+    }
+
+    @PutMapping("/users")
+    public ResponseEntity<User> updateUser(@RequestBody User user) {
+        log.info("PUT-Запрос на обновление пользователя.");
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.update(user));
+    }
+
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public ResponseEntity<User> addFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("PUT-Запрос на добавление в друзья пользователя friendId = {} от пользователя id = {}.", friendId, id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.addFriend(id, friendId));
+    }
+
+    @DeleteMapping("/users/{id}/friends/{friendId}")
+    public ResponseEntity<User> deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("DELETE-Удаление пользователя friendId = {} из друзей пользователя id = {}.", friendId, id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.deleteFriend(id, friendId));
+    }
+}
