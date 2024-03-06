@@ -8,12 +8,15 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Primary
 @Component
@@ -21,6 +24,7 @@ import java.util.*;
 @AllArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final FilmStorage filmStorage;
 
     @Override
     public User add(User user) {
@@ -136,5 +140,73 @@ public class UserDbStorage implements UserStorage {
                 "(select friend_id from user_friends where user_id = ?) as tt \n" +
                 "inner  join (select friend_id from user_friends where user_id = ?) uf on uf.friend_id = tt.friend_id)";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id, otherId);
+    }
+
+    /**
+     * Метод для получения рекомендаций фильмов для пользователя.
+     *
+     * @param id идентификатор пользователя, для которого требуются рекомендации.
+     * @return Список рекомендованных фильмов. Если нет подходящих рекомендаций, возвращает пустой список.
+     * @throws NotFoundException выбрасывает исключение при неверно переданном идентификаторе.
+     *
+     *                           <p>Этот метод работает следующим образом:
+     *                           <ul>
+     *                           <li>Сначала он получает список фильмов, которые понравились каждому пользователю.</li>
+     *                           <li>Затем он находит пользователя с наибольшим количеством общих предпочтений с целевым пользователем.</li>
+     *                           <li>Наконец, он возвращает список фильмов, которые понравились этому пользователю, но которые целевой пользователь еще не видел.</li>
+     *                           </ul>
+     */
+    @Override
+    public List<Film> getRecommendations(long id) {
+        getUserById(id);
+        Map<Long, List<Long>> usersLikes = new HashMap<>();
+        String sql = "SELECT * FROM user_likes";
+        SqlRowSet srs = jdbcTemplate.queryForRowSet(sql);
+        while (srs.next()) {
+            Long userId = srs.getLong("user_id");
+            Long filmId = srs.getLong("film_id");
+            if (!usersLikes.containsKey(userId)) {
+                usersLikes.put(userId, new ArrayList<>());
+            }
+            usersLikes.get(userId).add(filmId);
+        }
+        List<Long> thisUserLikes = usersLikes.get(id);
+        usersLikes.remove(id);
+        Long userIdSecond = -1L;
+        Long maxCountIntersections = -1L;
+        for (Long userId : usersLikes.keySet()) {
+            Long countIntersections = findIntersectionsTwoSets(thisUserLikes, usersLikes.get(userId));
+            if (maxCountIntersections < countIntersections) {
+                maxCountIntersections = countIntersections;
+                userIdSecond = userId;
+            }
+        }
+        if (userIdSecond < 1) {
+            return new ArrayList<>();
+        }
+        List<Long> otherUserLikes = usersLikes.get(userIdSecond);
+        log.info(otherUserLikes.toString());
+        log.info(thisUserLikes.toString());
+        otherUserLikes.removeAll(thisUserLikes);
+
+        return otherUserLikes.stream()
+                .map(filmStorage::getFilmById)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Находит количество элементов в пересечении двух множеств.
+     *
+     * @param listOne    Первое множество в виде списка.
+     * @param listSecond Второе множество в виде списка.
+     * @return Количество элементов в пересечении множеств.
+     */
+    private Long findIntersectionsTwoSets(List<Long> listOne, List<Long> listSecond) {
+        Set<Long> setOne = new HashSet<>(listOne);
+        Set<Long> setSecond = new HashSet<>(listSecond);
+
+        setOne.retainAll(setSecond);
+
+        return (long) setOne.size();
     }
 }
