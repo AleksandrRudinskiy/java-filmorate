@@ -20,20 +20,18 @@ public class FilmService {
         filmStorage.addLike(id, userId);
     }
 
+    /**
+     * Удаляет лайк пользователя к фильму.
+     *
+     * @param id     идентификатор фильма, для которого нужно удалить лайк.
+     * @param userId идентификатор пользователя, чей лайк нужно удалить.
+     * @return Film  возвращает объект фильма, для которого был удален лайк.
+     * @throws NotFoundException если фильм с указанным идентификатором не найден.
+     */
     public Film deleteLike(long id, long userId) {
         Film film = filmStorage.getFilmById(id);
         film.getLikes().remove(userId);
         return filmStorage.deleteLike(id, userId);
-//
-//        if (!filmStorage.isAlreadyExists(id)) {
-//            throw new NotFoundException("film с id = " + id + " не найден");
-//        }
-//        if (userId < 0) {
-//            throw new NotFoundException("Неверный id пользователя");
-//        }
-//        Film film = getFilmById(id);
-//        film.getLikes().remove(userId);
-//        return film;
     }
 
     public List<Film> getBestFilms(int count) {
