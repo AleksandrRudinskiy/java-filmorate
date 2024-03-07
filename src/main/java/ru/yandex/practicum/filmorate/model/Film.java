@@ -26,16 +26,6 @@ public class Film {
     private List<Genre> genres;
     private Set<Long> likes = new HashSet<>();
 
-    public Map<String, Object> toMap() {
-        Map<String, Object> values = new HashMap<>();
-        values.put("film_name", name);
-        values.put("description", description);
-        values.put("release_date", releaseDate);
-        values.put("duration", duration);
-        values.put("category_id", mpa.getId());
-        return values;
-    }
-
     public Film(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa, List<Genre> genres) {
         this.id = id;
         this.name = name;
@@ -44,5 +34,15 @@ public class Film {
         this.duration = duration;
         this.mpa = mpa;
         this.genres = genres;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("film_name", name);
+        values.put("description", description);
+        values.put("release_date", releaseDate);
+        values.put("duration", duration);
+        values.put("category_id", mpa.getId());
+        return values;
     }
 }
