@@ -129,6 +129,13 @@ public class FilmDbStorage implements FilmStorage {
         return getFilmById(id);
     }
 
+    @Override
+    public void deleteFilm(long filmId) {
+        getFilmById(filmId);
+        String sql = "DELETE FROM films WHERE film_id = ?";
+        jdbcTemplate.update(sql, filmId);
+    }
+
     private Collection<Genre> findGenresByFilmId(long filmId) {
         String sql = "select distinct * from (select genre_id from film_genre where film_id = ? order by genre_id) as t join genre as g on t.genre_id = g.genre_id";
         return jdbcTemplate.query(sql, (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("genre_name")), filmId);
