@@ -115,6 +115,20 @@ public class UserDbStorage implements UserStorage {
         return getUserById(id);
     }
 
+
+    /**
+     * Удаляет пользователя из базы данных на основе их уникального идентификатора.
+     *
+     * @param userId Уникальный идентификатор пользователя, которого нужно удалить.
+     * @throws NotFoundException Если пользователь с идентификатором не существует.
+     */
+    @Override
+    public void deleteUser(long userId) {
+        getUserById(userId);
+        String sql = "DELETE FROM users WHERE user_id = ?";
+        jdbcTemplate.update(sql, userId);
+    }
+
     private List<Long> findFriendsByUserId(long userId) {
         String sql = "select friend_id from user_friends where user_id = ? order by friend_id";
         return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("friend_id"), userId);

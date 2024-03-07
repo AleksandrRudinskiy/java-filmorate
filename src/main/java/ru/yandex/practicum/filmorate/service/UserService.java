@@ -69,6 +69,10 @@ public class UserService {
         return userStorage.getUsersFriends(id);
     }
 
+    public void deleteUser(long userId) {
+        userStorage.deleteUser(userId);
+    }
+
     private void validateUser(User user) {
         if ((user.getEmail().isEmpty()) || (!user.getEmail().contains("@"))) {
             throw new ValidationException("E-mail is empty or not contains symbol \"@\"");

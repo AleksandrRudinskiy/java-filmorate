@@ -71,4 +71,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(userService.deleteFriend(id, friendId));
     }
+
+    @DeleteMapping("/users/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteUser(@PathVariable long userId) {
+        log.info("DELETE-Запрос на удаление пользователя и связанных с ним данных.");
+        userService.deleteUser(userId);
+    }
 }
