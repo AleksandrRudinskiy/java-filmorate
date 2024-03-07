@@ -47,26 +47,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getAllFilms() {
-        String sql = "select distinct f.film_id, f.film_name, f.description, f.release_date, f.duration, f.category_id, genre_id from films as f left join film_genre as fg on fg.film_id = f.film_id";
-
-        List<Film> filmsList = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
-        List<FilmsDbGenres> filmDbGenres = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmDbGenres(rs));
-
-        Map<Long, Film> filmsMap = new HashMap<>();
-
-        filmsList.forEach(f -> filmsMap.put(f.getId(), f));
-
-        List<Film> films = new ArrayList<>(filmsMap.values());
-
-        Map<Long, List<Genre>> filmsGenres = new HashMap<>();
-        for (FilmsDbGenres filmGenre : filmDbGenres) {
-            filmsGenres.put(filmGenre.getFilmId(), new ArrayList<>());
-            if (filmsGenres.containsKey(filmGenre.getFilmId()) && getGenreById(filmGenre.getGenreId()).isPresent()) {
-                filmsGenres.get(filmGenre.getFilmId()).add(getGenreById(filmGenre.getGenreId()).get());
-            }
-        }
-        films.forEach(i -> i.setGenres(filmsGenres.get(i.getId())));
-        return new ArrayList<>(films);
+        return jdbcTemplate.query("SELECT * FROM films", this::makeFilm);
     }
 
     @Override
@@ -129,6 +110,12 @@ public class FilmDbStorage implements FilmStorage {
         return getFilmById(id);
     }
 
+    /**
+     * Удаляет фильм из базы данных по его идентификатору.
+     *
+     * @param filmId Идентификатор фильма, который нужно удалить.
+     * @throws NotFoundException Если фильм с идентификатором filmId не существует.
+     */
     @Override
     public void deleteFilm(long filmId) {
         getFilmById(filmId);
@@ -156,10 +143,14 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    //FIXME
+    // Этот метод где-то используется?
     private FilmsDbGenres makeFilmDbGenres(ResultSet rs) throws SQLException {
         return new FilmsDbGenres(rs.getLong("film_id"), rs.getInt("genre_id"));
     }
 
+    //FIXME
+    // Этот метод где-то используется?
     private Optional<Genre> getGenreById(int genreId) {
         SqlRowSet userRows = jdbcTemplate.queryForRowSet("select * from genre where genre_id = ?", genreId);
         if (genreId == 0) {
@@ -175,7 +166,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private Film makeFilm(ResultSet rs) throws SQLException {
+    private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         long id = rs.getLong("film_id");
         return new Film(
                 rs.getLong("film_id"),
