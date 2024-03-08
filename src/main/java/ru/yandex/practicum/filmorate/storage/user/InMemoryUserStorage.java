@@ -86,6 +86,11 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public void deleteUser(long userId) {
+        //TODO
+    }
+
+    @Override
     public List<User> getUsersFriends(long id) {
         User user = getUserById(id);
         if (user == null) {
