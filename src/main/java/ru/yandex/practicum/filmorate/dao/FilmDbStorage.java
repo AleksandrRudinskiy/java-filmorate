@@ -141,7 +141,8 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, filmId);
     }
 
-    /* Удаляет лайк пользователя к фильму.
+    /**
+     * Удаляет лайк пользователя к фильму.
      *
      * @param id     идентификатор фильма, для которого нужно удалить лайк.
      * @param userId идентификатор пользователя, чей лайк нужно удалить.
