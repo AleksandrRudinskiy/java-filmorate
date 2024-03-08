@@ -38,8 +38,8 @@ public class FilmService {
         return filmStorage.deleteLike(id, userId);
     }
 
-    public List<Film> getBestFilms(int count) {
-        return filmStorage.getBestFilms(count);
+    public List<Film> getBestFilms(int limit, int genreId, int year) {
+        return filmStorage.getBestFilms(limit, genreId, year);
     }
 
     public List<Film> getFilms() {
