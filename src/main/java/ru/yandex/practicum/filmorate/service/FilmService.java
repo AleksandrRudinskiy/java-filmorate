@@ -28,6 +28,7 @@ public class FilmService {
      * @param id     идентификатор фильма, для которого нужно удалить лайк.
      * @param userId идентификатор пользователя, чей лайк нужно удалить.
      * @return Film  возвращает объект фильма, для которого был удален лайк.
+     * @throws NotFoundException если пользователь с указанным идентификатором не найден.
      * @throws NotFoundException если фильм с указанным идентификатором не найден.
      */
     public Film deleteLike(long id, long userId) {
