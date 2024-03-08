@@ -50,6 +50,24 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query("SELECT * FROM films", this::makeFilm);
     }
 
+    /**
+     * Возвращает список фильмов, которые понравились обоим пользователям.
+     *
+     * @param userId   идентификатор первого пользователя.
+     * @param friendId идентификатор второго пользователя.
+     * @return List<Film> возвращает список фильмов, которые понравились обоим пользователям.
+     */
+    @Override
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        String sql =
+                "SELECT f.* " +
+                        "FROM films AS f " +
+                        "JOIN user_likes AS ul_1 ON f.film_id = ul_1.film_id " +
+                        "JOIN user_likes AS ul_2 ON f.film_id = ul_2.film_id " +
+                        "WHERE ul_1.user_id = ? AND ul_2.user_id = ?;";
+        return jdbcTemplate.query(sql, this::makeFilm, userId, friendId);
+    }
+
     @Override
     public boolean isAlreadyExists(long id) {
         return getFilmById(id) != null;
@@ -123,6 +141,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, filmId);
     }
 
+    /**
      * Удаляет лайк пользователя к фильму.
      *
      * @param id     идентификатор фильма, для которого нужно удалить лайк.

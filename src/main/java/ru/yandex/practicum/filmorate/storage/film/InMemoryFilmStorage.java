@@ -55,9 +55,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void deleteFilm(long filmId) {
-        //TODO
+
+    public Film deleteLike(long id, long userId) {
+        return null;
     }
+
+    public void deleteFilm(long filmId) {
+    }
+
 
     @Override
     public List<Film> getBestFilms(int count) {
@@ -76,8 +81,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film deleteLike(long id, long userId) {
-        //TODO
+    public List<Film> getCommonFilms(int userId, int friendId) {
         return null;
     }
 }

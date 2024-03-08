@@ -8,7 +8,6 @@ INSERT INTO category VALUES (4, 'R');
 
 INSERT INTO category VALUES (5, 'NC-17');
 
-
 INSERT INTO genre VALUES (1, 'Комедия');
 
 INSERT INTO genre VALUES (2, 'Драма');

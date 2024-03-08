@@ -28,6 +28,7 @@ public class FilmService {
      * @param id     идентификатор фильма, для которого нужно удалить лайк.
      * @param userId идентификатор пользователя, чей лайк нужно удалить.
      * @return Film  возвращает объект фильма, для которого был удален лайк.
+     * @throws NotFoundException если пользователь с указанным идентификатором не найден.
      * @throws NotFoundException если фильм с указанным идентификатором не найден.
      */
     public Film deleteLike(long id, long userId) {
@@ -43,6 +44,21 @@ public class FilmService {
 
     public List<Film> getFilms() {
         return filmStorage.getAllFilms();
+    }
+
+
+    /**
+     * Возвращает список фильмов, которые понравились обоим пользователям.
+     *
+     * @param userId   идентификатор первого пользователя.
+     * @param friendId идентификатор второго пользователя.
+     * @return List<Film> возвращает список фильмов, которые понравились обоим пользователям.
+     * @throws NotFoundException если пользователь с указанным идентификатором не найден.
+     */
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
     public void add(Film film) {
