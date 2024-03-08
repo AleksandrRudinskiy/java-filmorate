@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -143,7 +142,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, filmId);
     }
 
-     /* Удаляет лайк пользователя к фильму.
+    /* Удаляет лайк пользователя к фильму.
      *
      * @param id     идентификатор фильма, для которого нужно удалить лайк.
      * @param userId идентификатор пользователя, чей лайк нужно удалить.
