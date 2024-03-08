@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
     public void addLike(long id, long userId) {
@@ -29,6 +31,7 @@ public class FilmService {
      * @throws NotFoundException если фильм с указанным идентификатором не найден.
      */
     public Film deleteLike(long id, long userId) {
+        userStorage.getUserById(userId);
         Film film = filmStorage.getFilmById(id);
         film.getLikes().remove(userId);
         return filmStorage.deleteLike(id, userId);
