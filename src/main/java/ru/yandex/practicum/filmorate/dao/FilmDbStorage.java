@@ -123,6 +123,19 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, filmId);
     }
 
+     * Удаляет лайк пользователя к фильму.
+     *
+     * @param id     идентификатор фильма, для которого нужно удалить лайк.
+     * @param userId идентификатор пользователя, чей лайк нужно удалить.
+     * @return Film  возвращает объект фильма, для которого был удален лайк.
+     */
+    @Override
+    public Film deleteLike(long id, long userId) {
+        String sql = "DELETE FROM user_likes WHERE film_id = ? AND user_id = ?";
+        jdbcTemplate.update(sql, id, userId);
+        return getFilmById(id);
+    }
+
     private Collection<Genre> findGenresByFilmId(long filmId) {
         String sql = "select distinct * from (select genre_id from film_genre where film_id = ? order by genre_id) as t join genre as g on t.genre_id = g.genre_id";
         return jdbcTemplate.query(sql, (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("genre_name")), filmId);

@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,22 +15,26 @@ import java.util.List;
 @AllArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
     public void addLike(long id, long userId) {
         filmStorage.addLike(id, userId);
     }
 
+    /**
+     * Удаляет лайк пользователя к фильму.
+     *
+     * @param id     идентификатор фильма, для которого нужно удалить лайк.
+     * @param userId идентификатор пользователя, чей лайк нужно удалить.
+     * @return Film  возвращает объект фильма, для которого был удален лайк.
+     * @throws NotFoundException если фильм с указанным идентификатором не найден.
+     */
     public Film deleteLike(long id, long userId) {
-        if (!filmStorage.isAlreadyExists(id)) {
-            throw new NotFoundException("film с id = " + id + " не найден");
-        }
-        if (userId < 0) {
-            throw new NotFoundException("Неверный id пользователя");
-        }
-        Film film = getFilmById(id);
+        userStorage.getUserById(userId);
+        Film film = filmStorage.getFilmById(id);
         film.getLikes().remove(userId);
-        return film;
+        return filmStorage.deleteLike(id, userId);
     }
 
     public List<Film> getBestFilms(int count) {
