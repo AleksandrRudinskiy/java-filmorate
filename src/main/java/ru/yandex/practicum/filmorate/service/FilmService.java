@@ -45,6 +45,15 @@ public class FilmService {
         return filmStorage.getAllFilms();
     }
 
+
+    /**
+     * Возвращает список фильмов, которые понравились обоим пользователям.
+     *
+     * @param userId   идентификатор первого пользователя.
+     * @param friendId идентификатор второго пользователя.
+     * @return List<Film> возвращает список фильмов, которые понравились обоим пользователям.
+     * @throws NotFoundException если пользователь с указанным идентификатором не найден.
+     */
     public List<Film> getCommonFilms(int userId, int friendId) {
         userStorage.getUserById(userId);
         userStorage.getUserById(friendId);

@@ -56,7 +56,6 @@ public class FilmDbStorage implements FilmStorage {
      * @param userId   идентификатор первого пользователя.
      * @param friendId идентификатор второго пользователя.
      * @return List<Film> возвращает список фильмов, которые понравились обоим пользователям.
-     * @throws NotFoundException если пользователь с указанным идентификатором не найден.
      */
     @Override
     public List<Film> getCommonFilms(int userId, int friendId) {
