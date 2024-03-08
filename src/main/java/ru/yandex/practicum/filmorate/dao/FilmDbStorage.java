@@ -49,6 +49,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getAllFilms() {
+
         String sql = "select distinct f.film_id, f.film_name, f.description, f.release_date, f.duration, f.category_id, genre_id from films as f left join film_genre as fg on fg.film_id = f.film_id";
 
         List<Film> filmsList = jdbcTemplate.query(sql, this::makeFilm);
@@ -69,6 +70,9 @@ public class FilmDbStorage implements FilmStorage {
         }
         films.forEach(i -> i.setGenres(filmsGenres.get(i.getId())));
         return new ArrayList<>(films);
+
+        return jdbcTemplate.query("SELECT * FROM films", this::makeFilm);
+
     }
 
     /**
@@ -153,6 +157,18 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     /**
+     * Удаляет фильм из базы данных по его идентификатору.
+     *
+     * @param filmId Идентификатор фильма, который нужно удалить.
+     * @throws NotFoundException Если фильм с идентификатором filmId не существует.
+     */
+    @Override
+    public void deleteFilm(long filmId) {
+        getFilmById(filmId);
+        String sql = "DELETE FROM films WHERE film_id = ?";
+        jdbcTemplate.update(sql, filmId);
+    }
+
      * Удаляет лайк пользователя к фильму.
      *
      * @param id     идентификатор фильма, для которого нужно удалить лайк.
@@ -188,10 +204,14 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    //FIXME
+    // Этот метод где-то используется?
     private FilmsDbGenres makeFilmDbGenres(ResultSet rs) throws SQLException {
         return new FilmsDbGenres(rs.getLong("film_id"), rs.getInt("genre_id"));
     }
 
+    //FIXME
+    // Этот метод где-то используется?
     private Optional<Genre> getGenreById(int genreId) {
         SqlRowSet userRows = jdbcTemplate.queryForRowSet("select * from genre where genre_id = ?", genreId);
         if (genreId == 0) {

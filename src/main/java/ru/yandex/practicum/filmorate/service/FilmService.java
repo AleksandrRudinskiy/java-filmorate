@@ -71,6 +71,10 @@ public class FilmService {
         return filmStorage.getFilmById(id);
     }
 
+    public void deleteFilm(long filmId) {
+        filmStorage.deleteFilm(filmId);
+    }
+
     private void validateFilm(Film film) {
         if (film.getName().isEmpty() || film.getName().isBlank()) {
             throw new ValidationException("The name is empty");

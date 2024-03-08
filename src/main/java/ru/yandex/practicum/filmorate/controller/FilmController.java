@@ -74,4 +74,11 @@ public class FilmController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(filmService.deleteLike(filmId, userId));
     }
+
+    @DeleteMapping("/films/{filmId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteFilm(@PathVariable long filmId) {
+        log.info("DELETE-Запрос на удаление фильма и всех связанных с ним данных.");
+        filmService.deleteFilm(filmId);
+    }
 }

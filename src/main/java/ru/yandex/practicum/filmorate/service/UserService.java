@@ -70,6 +70,11 @@ public class UserService {
         return userStorage.getUsersFriends(id);
     }
 
+
+    public void deleteUser(long userId) {
+        userStorage.deleteUser(userId);
+    }
+  
     public List<Film> getRecommendations(long id) {
         return userStorage.getRecommendations(id);
     }
