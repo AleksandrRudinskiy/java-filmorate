@@ -24,16 +24,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getBestFilmsWithGenre(int genreId) {
-        return null;
-    }
-
-    @Override
-    public Set<Film> getBestFilmsWithYear(int year) {
-        return null;
-    }
-
-    @Override
     public List<Film> getAllFilms() {
         return new ArrayList<>(films.values());
     }
@@ -80,11 +70,6 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
                 .limit(count)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Film> getBestFilms(int limit) {
-        return null;
     }
 
     @Override

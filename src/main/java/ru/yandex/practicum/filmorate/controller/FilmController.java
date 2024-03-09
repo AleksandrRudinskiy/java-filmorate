@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,23 +27,12 @@ public class FilmController {
 
     @GetMapping("/films/popular")
     public List<Film> getBestFilms(
-            @RequestParam(required = false) Integer genreId,
-            @RequestParam(required = false) Integer year,
+            @RequestParam(defaultValue = "0", required = false) int genreId,
+            @RequestParam(defaultValue = "0", required = false) int year,
             @RequestParam(defaultValue = "10", required = false) int count) {
         log.info("GET-Запрос на получение топ-списка {} фильмов.", count);
-        if (genreId == null && year == null) {
-            return filmService.getBestFilms(count);
-        }
-        if (genreId != null && year == null) {
-            return filmService.getBestFilmsWithGenre(genreId);
-        }
-        if (genreId == null) {
-            return new ArrayList<>(filmService.getBestFilmsWithYear(year));
-        } else {
-            return filmService.getBestFilms(genreId, year, count);
-        }
+        return filmService.getBestFilms(genreId, year, count);
     }
-
 
     @GetMapping("/films/{filmId}")
     public ResponseEntity<Film> getFilmById(@PathVariable int filmId) {

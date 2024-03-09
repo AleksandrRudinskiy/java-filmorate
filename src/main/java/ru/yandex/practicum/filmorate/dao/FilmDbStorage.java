@@ -93,53 +93,32 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getBestFilms(int genreId, int year, int limit) {
-        String sql = "SELECT f.FILM_ID \n" +
-                "from films as f \n" +
-                "Left join user_likes as ul on f.film_id  = ul.film_id \n" +
-                "LEFT JOIN FILM_GENRE fg ON f.FILM_ID = fg.FILM_ID \n" +
-                "group by f.film_id,\n" +
-                "fg.GENRE_ID \n" +
-                "HAVING fg.GENRE_ID = ? AND YEAR(f.RELEASE_DATE) = ? \n" +
-                "order by count(ul.user_id) \n" +
-                "desc limit ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), genreId, year, limit);
-    }
-
-    @Override
-    public List<Film> getBestFilmsWithGenre(int genreId) {
-        String sql = "SELECT f.FILM_ID \n" +
-                "from films as f \n" +
-                "Left join user_likes as ul on f.film_id  = ul.film_id \n" +
-                "LEFT JOIN FILM_GENRE fg ON f.FILM_ID = fg.FILM_ID \n" +
-                "group by f.film_id,\n" +
-                "fg.GENRE_ID \n" +
-                "HAVING fg.GENRE_ID = ? \n" +
-                "order by count(ul.user_id)";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), genreId);
-    }
-
-    public Set<Film> getBestFilmsWithYear(int year) {
-        String sql = "SELECT f.FILM_ID \n" +
-                "from films as f \n" +
-                "Left join user_likes as ul on f.film_id  = ul.film_id \n" +
-                "LEFT JOIN FILM_GENRE fg ON f.FILM_ID = fg.FILM_ID \n" +
-                "group by f.film_id,\n" +
-                "fg.GENRE_ID \n" +
-                "HAVING YEAR(f.RELEASE_DATE) = ? \n" +
-                "order by count(ul.user_id)";
-        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), year));
-    }
-
-    @Override
-    public List<Film> getBestFilms(int count) {
-        String sql = "SELECT f.FILM_ID \n" +
-                "from films as f \n" +
-                "Left join user_likes as ul on f.film_id  = ul.film_id \n" +
-                "group by f.film_id\n" +
-                "order by count(ul.user_id)\n" +
-                "desc limit ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), count);
+    public List<Film> getBestFilms(int genreId, int year, int count) {
+        String sql = "SELECT f.film_id " +
+                "FROM films f " +
+                "LEFT JOIN user_likes ul ON f.film_id  = ul.film_id " +
+                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
+                "GROUP BY f.film_id, fg.genre_id " +
+                "ORDER BY count(ul.user_id) " +
+                "DESC LIMIT ?";
+        Genre genre = getGenreById(genreId);
+        Set<Film> films = new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), count));
+        if (genreId == 0 && year != 0) {
+            return films.stream().filter(f -> f.getReleaseDate().getYear() == year).collect(Collectors.toList());
+        } else if (year == 0 && genreId != 0) {
+            log.info("Запрос на топ фильмов с жанром {}", genreId);
+            log.info("Искомый жанр {}", genre);
+            return films.stream()
+                    .filter(f -> f.getGenres().contains(genre))
+                    .collect(Collectors.toList());
+        } else if (year != 0) {
+            return films.stream()
+                    .filter(f -> f.getReleaseDate().getYear() == year)
+                    .filter(f -> f.getGenres().contains(genre))
+                    .collect(Collectors.toList());
+        } else {
+            return new ArrayList<>(films);
+        }
     }
 
     @Override
@@ -230,4 +209,16 @@ public class FilmDbStorage implements FilmStorage {
         );
     }
 
+    private Genre getGenreById(int genreId) {
+        String sql = "SELECT * FROM genre WHERE genre_id = ?";
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, genreId);
+        Genre genre = null;
+        if (userRows.next()) {
+            genre = new Genre(
+                    userRows.getInt("genre_id"),
+                    userRows.getString("genre_name")
+            );
+        }
+        return genre;
+    }
 }
