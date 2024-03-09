@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import lombok.Getter;
+import lombok.*;
 
 @Getter
 public class UserDbFriends {

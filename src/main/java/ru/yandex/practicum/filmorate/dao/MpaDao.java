@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
 
-import java.util.List;
+import java.util.*;
 
 public interface MpaDao {
     Mpa getMpaById(int id);
