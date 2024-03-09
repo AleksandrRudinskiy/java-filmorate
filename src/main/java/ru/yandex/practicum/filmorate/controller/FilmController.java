@@ -28,9 +28,9 @@ public class FilmController {
 
     @GetMapping("/films/popular")
     public List<Film> getBestFilms(
-            @RequestParam(required = false) Integer genreId
-            , @RequestParam(required = false) Integer year
-            , @RequestParam(defaultValue = "10", required = false) int count) {
+            @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(defaultValue = "10", required = false) int count) {
         log.info("GET-Запрос на получение топ-списка {} фильмов.", count);
         if (genreId == null && year == null) {
             return filmService.getBestFilms(count);
