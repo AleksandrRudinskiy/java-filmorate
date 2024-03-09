@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface FilmStorage {
@@ -25,6 +26,8 @@ public interface FilmStorage {
     void deleteFilm(long filmId);
 
     Film deleteLike(long id, long userId);
+
+    List<Film> findAllByDirectorIdSorted(Long directorId, String sortBy);
 
 }
 

@@ -15,7 +15,13 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Primary
@@ -163,12 +169,12 @@ public class UserDbStorage implements UserStorage {
      * @return Список рекомендованных фильмов. Если нет подходящих рекомендаций, возвращает пустой список.
      * @throws NotFoundException выбрасывает исключение при неверно переданном идентификаторе.
      *
-     * <p>Этот метод работает следующим образом:
-     * <ul>
-     * <li>Сначала он получает список фильмов, которые понравились каждому пользователю.</li>
-     * <li>Затем он находит пользователя с наибольшим количеством общих предпочтений с целевым пользователем.</li>
-     * <li>Наконец, он возвращает список фильмов, которые понравились этому пользователю, но которые целевой пользователь еще не видел.</li>
-     * </ul>
+     *                           <p>Этот метод работает следующим образом:
+     *                           <ul>
+     *                           <li>Сначала он получает список фильмов, которые понравились каждому пользователю.</li>
+     *                           <li>Затем он находит пользователя с наибольшим количеством общих предпочтений с целевым пользователем.</li>
+     *                           <li>Наконец, он возвращает список фильмов, которые понравились этому пользователю, но которые целевой пользователь еще не видел.</li>
+     *                           </ul>
      */
     @Override
     public List<Film> getRecommendations(long id) {
