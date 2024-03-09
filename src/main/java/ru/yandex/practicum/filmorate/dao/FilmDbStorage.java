@@ -32,9 +32,7 @@ public class FilmDbStorage implements FilmStorage {
                 .withTableName("films")
                 .usingGeneratedKeyColumns("film_id");
         long filmId = simpleJdbcInsert.executeAndReturnKey(film.toMap()).longValue();
-
         film.setId(filmId);
-
         log.info("id фильма = " + filmId);
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
@@ -95,9 +93,53 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getBestFilms(int limit, int genreId, int year) {
-        String sql = "select f.film_id from films as f left join user_likes as ul on f.film_id  = ul.film_id group by f.film_id order by count(user_id) desc limit ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), limit);
+    public List<Film> getBestFilms(int genreId, int year, int limit) {
+        String sql = "SELECT f.FILM_ID \n" +
+                "from films as f \n" +
+                "Left join user_likes as ul on f.film_id  = ul.film_id \n" +
+                "LEFT JOIN FILM_GENRE fg ON f.FILM_ID = fg.FILM_ID \n" +
+                "group by f.film_id,\n" +
+                "fg.GENRE_ID \n" +
+                "HAVING fg.GENRE_ID = ? AND YEAR(f.RELEASE_DATE) = ? \n" +
+                "order by count(ul.user_id) \n" +
+                "desc limit ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), genreId, year, limit);
+    }
+
+    @Override
+    public List<Film> getBestFilmsWithGenre(int genreId) {
+        String sql = "SELECT f.FILM_ID \n" +
+                "from films as f \n" +
+                "Left join user_likes as ul on f.film_id  = ul.film_id \n" +
+                "LEFT JOIN FILM_GENRE fg ON f.FILM_ID = fg.FILM_ID \n" +
+                "group by f.film_id,\n" +
+                "fg.GENRE_ID \n" +
+                "HAVING fg.GENRE_ID = ? \n" +
+                "order by count(ul.user_id)";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), genreId);
+    }
+
+    public Set<Film> getBestFilmsWithYear(int year) {
+        String sql = "SELECT f.FILM_ID \n" +
+                "from films as f \n" +
+                "Left join user_likes as ul on f.film_id  = ul.film_id \n" +
+                "LEFT JOIN FILM_GENRE fg ON f.FILM_ID = fg.FILM_ID \n" +
+                "group by f.film_id,\n" +
+                "fg.GENRE_ID \n" +
+                "HAVING YEAR(f.RELEASE_DATE) = ? \n" +
+                "order by count(ul.user_id)";
+        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), year));
+    }
+
+    @Override
+    public List<Film> getBestFilms(int count) {
+        String sql = "SELECT f.FILM_ID \n" +
+                "from films as f \n" +
+                "Left join user_likes as ul on f.film_id  = ul.film_id \n" +
+                "group by f.film_id\n" +
+                "order by count(ul.user_id)\n" +
+                "desc limit ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), count);
     }
 
     @Override
@@ -172,29 +214,6 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             log.info("Категория (MPA) с идентификатором {} не найдена.", categoryId);
             throw new NotFoundException("Категория (MPA) с идентификатором" + categoryId + "не найдена.");
-        }
-    }
-
-    //FIXME
-    // Этот метод где-то используется?
-    private FilmsDbGenres makeFilmDbGenres(ResultSet rs) throws SQLException {
-        return new FilmsDbGenres(rs.getLong("film_id"), rs.getInt("genre_id"));
-    }
-
-    //FIXME
-    // Этот метод где-то используется?
-    private Optional<Genre> getGenreById(int genreId) {
-        SqlRowSet userRows = jdbcTemplate.queryForRowSet("select * from genre where genre_id = ?", genreId);
-        if (genreId == 0) {
-            return Optional.empty();
-        }
-        if (userRows.next()) {
-            return Optional.of(new Genre(
-                    userRows.getInt("genre_id"),
-                    userRows.getString("genre_name")
-            ));
-        } else {
-            throw new NotFoundException("Жанр не найден.");
         }
     }
 

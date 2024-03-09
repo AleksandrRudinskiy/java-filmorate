@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -38,8 +39,20 @@ public class FilmService {
         return filmStorage.deleteLike(id, userId);
     }
 
-    public List<Film> getBestFilms(int limit, int genreId, int year) {
-        return filmStorage.getBestFilms(limit, genreId, year);
+    public List<Film> getBestFilms(int count, int genreId, int year) {
+        return filmStorage.getBestFilms(count, genreId, year);
+    }
+
+    public List<Film> getBestFilmsWithGenre(int genreId) {
+        return filmStorage.getBestFilmsWithGenre(genreId);
+    }
+
+    public Set<Film> getBestFilmsWithYear(int year) {
+        return filmStorage.getBestFilmsWithYear(year);
+    }
+
+    public List<Film> getBestFilms(int count) {
+        return filmStorage.getBestFilms(count);
     }
 
     public List<Film> getFilms() {
