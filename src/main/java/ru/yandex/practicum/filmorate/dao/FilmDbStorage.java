@@ -15,7 +15,12 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -24,6 +29,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+
+    private final DirectorDaoImpl directorDbstorage;
 
     @Override
     public Film add(Film film) {
@@ -94,6 +101,21 @@ public class FilmDbStorage implements FilmStorage {
         return getFilmById(id);
     }
 
+    public List<Film> findAllByDirectorIdSorted(Long directorId, String sortBy) {
+        if (directorDbstorage.findById(directorId).isEmpty()) {
+            throw new NotFoundException("Режиссёр с id = " + directorId + "не найден.");
+        }
+        String sql = "SELECT * FROM films " +
+                "JOIN director_to_film ON films.film_id = director_to_film.film_id " +
+                "WHERE director_to_film.director_id = ?";
+        if ("likes".equals(sortBy)) {
+            sql += " ORDER BY (SELECT COUNT(user_id) FROM user_likes WHERE film_id = films.film_id) DESC";
+        } else if ("year".equals(sortBy)) {
+            sql += " ORDER BY films.release_date";
+        }
+        return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), directorId);
+    }
+
     @Override
     public List<Film> getBestFilms(int count) {
         String sql = "select f.film_id from films as f left join user_likes as ul on f.film_id  = ul.film_id group by f.film_id order by count(user_id) desc limit ?";
@@ -111,7 +133,8 @@ public class FilmDbStorage implements FilmStorage {
                     Objects.requireNonNull(userRows.getDate("release_date")).toLocalDate(),
                     userRows.getInt("duration"),
                     findMpaByCategoryId(userRows.getInt("category_id")),
-                    new ArrayList<>(findGenresByFilmId(id))
+                    new ArrayList<>(findGenresByFilmId(id)),
+                    new ArrayList<>(directorDbstorage.getFilmDirectors(id))
             );
             log.info("Найден фильм: {} {}", film.getId(), film.getName());
             return film;
@@ -207,7 +230,8 @@ public class FilmDbStorage implements FilmStorage {
                 Objects.requireNonNull(rs.getDate("release_date")).toLocalDate(),
                 rs.getInt("duration"),
                 findMpaByCategoryId(rs.getInt("category_id")),
-                new ArrayList<>(findGenresByFilmId(id))
+                new ArrayList<>(findGenresByFilmId(id)),
+                new ArrayList<>(directorDbstorage.getFilmDirectors(id))
         );
     }
 
