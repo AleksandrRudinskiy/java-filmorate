@@ -31,9 +31,7 @@ public class FilmDbStorage implements FilmStorage {
                 .withTableName("films")
                 .usingGeneratedKeyColumns("film_id");
         long filmId = simpleJdbcInsert.executeAndReturnKey(film.toMap()).longValue();
-
         film.setId(filmId);
-
         log.info("id фильма = " + filmId);
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
@@ -109,9 +107,32 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getBestFilms(int count) {
-        String sql = "select f.film_id from films as f left join user_likes as ul on f.film_id  = ul.film_id group by f.film_id order by count(user_id) desc limit ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), count);
+    public List<Film> getBestFilms(int genreId, int year, int count) {
+        String sql = "SELECT f.film_id " +
+                "FROM films f " +
+                "LEFT JOIN user_likes ul ON f.film_id  = ul.film_id " +
+                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
+                "GROUP BY f.film_id, fg.genre_id " +
+                "ORDER BY count(ul.user_id) " +
+                "DESC LIMIT ?";
+        Genre genre = getGenreById(genreId);
+        Set<Film> films = new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), count));
+        if (genreId == 0 && year != 0) {
+            return films.stream().filter(f -> f.getReleaseDate().getYear() == year).collect(Collectors.toList());
+        } else if (year == 0 && genreId != 0) {
+            log.info("Запрос на топ фильмов с жанром {}", genreId);
+            log.info("Искомый жанр {}", genre);
+            return films.stream()
+                    .filter(f -> f.getGenres().contains(genre))
+                    .collect(Collectors.toList());
+        } else if (year != 0) {
+            return films.stream()
+                    .filter(f -> f.getReleaseDate().getYear() == year)
+                    .filter(f -> f.getGenres().contains(genre))
+                    .collect(Collectors.toList());
+        } else {
+            return new ArrayList<>(films);
+        }
     }
 
     @Override
@@ -190,29 +211,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    //FIXME
-    // Этот метод где-то используется?
-    private FilmsDbGenres makeFilmDbGenres(ResultSet rs) throws SQLException {
-        return new FilmsDbGenres(rs.getLong("film_id"), rs.getInt("genre_id"));
-    }
-
-    //FIXME
-    // Этот метод где-то используется?
-    private Optional<Genre> getGenreById(int genreId) {
-        SqlRowSet userRows = jdbcTemplate.queryForRowSet("select * from genre where genre_id = ?", genreId);
-        if (genreId == 0) {
-            return Optional.empty();
-        }
-        if (userRows.next()) {
-            return Optional.of(new Genre(
-                    userRows.getInt("genre_id"),
-                    userRows.getString("genre_name")
-            ));
-        } else {
-            throw new NotFoundException("Жанр не найден.");
-        }
-    }
-
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         long id = rs.getLong("film_id");
         return new Film(
@@ -227,4 +225,16 @@ public class FilmDbStorage implements FilmStorage {
         );
     }
 
+    private Genre getGenreById(int genreId) {
+        String sql = "SELECT * FROM genre WHERE genre_id = ?";
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, genreId);
+        Genre genre = null;
+        if (userRows.next()) {
+            genre = new Genre(
+                    userRows.getInt("genre_id"),
+                    userRows.getString("genre_name")
+            );
+        }
+        return genre;
+    }
 }
