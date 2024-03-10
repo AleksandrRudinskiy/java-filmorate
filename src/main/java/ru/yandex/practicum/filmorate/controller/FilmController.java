@@ -1,13 +1,16 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.*;
-import lombok.extern.slf4j.*;
-import org.springframework.http.*;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.service.*;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
@@ -90,4 +93,16 @@ public class FilmController {
         filmService.deleteFilm(filmId);
     }
 
+    @GetMapping(value = "/films/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> search(@RequestParam String query, @RequestParam String by) {
+        log.info("GET-Запрос на поиск фильма. Query = {}, by = {}", query, by);
+        return filmService.getFilms().stream()
+                .filter(f -> ((by.toLowerCase().contains("title") && f.getDescription().toLowerCase().contains(query.toLowerCase()))
+                                || (by.toLowerCase().contains("director") && f.getDirectors().stream().anyMatch(d -> d.getName().toLowerCase().contains(query.toLowerCase())))
+                        )
+                )
+                .sorted((f1, f2) -> filmService.getLikes(f2.getId()).size() - filmService.getLikes(f1.getId()).size())
+                .collect(Collectors.toList());
+    }
 }

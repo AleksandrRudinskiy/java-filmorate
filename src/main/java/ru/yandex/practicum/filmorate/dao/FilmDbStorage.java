@@ -1,19 +1,22 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import lombok.*;
-import lombok.extern.slf4j.*;
-import org.springframework.context.annotation.*;
-import org.springframework.jdbc.core.*;
-import org.springframework.jdbc.core.simple.*;
-import org.springframework.jdbc.support.rowset.*;
-import org.springframework.stereotype.*;
-import ru.yandex.practicum.filmorate.exceptions.*;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.storage.film.*;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
 
 @Component
 @Primary
@@ -163,6 +166,13 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, id, userId);
         return getFilmById(id);
     }
+
+    @Override
+    public Set<Long> getLikes(long id) {
+        String sql = "select user_id from  user_likes where film_id = ?";
+        return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, id));
+    }
+
 
     /**
      * Удаляет фильм из базы данных по его идентификатору.

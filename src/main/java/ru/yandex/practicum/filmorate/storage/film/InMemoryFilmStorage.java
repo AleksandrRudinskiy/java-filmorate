@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import org.springframework.stereotype.*;
-import ru.yandex.practicum.filmorate.exceptions.*;
-import ru.yandex.practicum.filmorate.model.*;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -54,8 +54,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
-    @Override
+    public Set<Long> getLikes(long id) {
+        return null;
+    }
 
+    @Override
     public Film deleteLike(long id, long userId) {
         return null;
     }
