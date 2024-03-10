@@ -15,12 +15,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -150,6 +145,13 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, id, userId);
         return getFilmById(id);
     }
+
+    @Override
+    public Set<Long> getLikes(long id) {
+        String sql = "select user_id from  user_likes where film_id = ?";
+        return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, id));
+    }
+
 
     /**
      * Удаляет фильм из базы данных по его идентификатору.

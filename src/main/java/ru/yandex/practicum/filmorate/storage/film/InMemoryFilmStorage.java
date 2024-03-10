@@ -4,11 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -58,8 +54,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
-    @Override
+    public Set<Long> getLikes(long id) {
+        return null;
+    }
 
+    @Override
     public Film deleteLike(long id, long userId) {
         return null;
     }

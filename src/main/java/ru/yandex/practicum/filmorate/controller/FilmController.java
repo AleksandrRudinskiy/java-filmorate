@@ -5,15 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -102,13 +94,13 @@ public class FilmController {
     @GetMapping(value = "/films/search", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<Film> search(@RequestParam String query, @RequestParam String by) {
-        log.info("GET-Запрос на поиск фильма. Query = {}, by = {}",query,by);
+        log.info("GET-Запрос на поиск фильма. Query = {}, by = {}", query, by);
         return filmService.getFilms().stream()
-                .sorted((f1, f2) -> f2.getLikes().size() - f1.getLikes().size())
                 .filter(f -> ((by.toLowerCase().contains("title") && f.getDescription().toLowerCase().contains(query.toLowerCase()))
-                        || (by.toLowerCase().contains("director") && f.getLikes().stream().anyMatch(d ->d.equals(1L)))
+                                || (by.toLowerCase().contains("director") && f.getDirectors().stream().anyMatch(d -> d.getName().toLowerCase().contains(query.toLowerCase())))
                         )
                 )
+                .sorted((f1, f2) -> filmService.getLikes(f2.getId()).size() - filmService.getLikes(f1.getId()).size())
                 .collect(Collectors.toList());
     }
 }
