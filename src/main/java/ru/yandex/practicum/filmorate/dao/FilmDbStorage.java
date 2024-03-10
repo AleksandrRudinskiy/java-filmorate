@@ -1,22 +1,19 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import lombok.*;
+import lombok.extern.slf4j.*;
+import org.springframework.context.annotation.*;
+import org.springframework.jdbc.core.*;
+import org.springframework.jdbc.core.simple.*;
+import org.springframework.jdbc.support.rowset.*;
+import org.springframework.stereotype.*;
+import ru.yandex.practicum.filmorate.exceptions.*;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.film.*;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.*;
 
 @Component
 @Primary
@@ -24,6 +21,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+
+    private final DirectorDaoImpl directorDbstorage;
 
     @Override
     public Film add(Film film) {
@@ -92,6 +91,21 @@ public class FilmDbStorage implements FilmStorage {
         return getFilmById(id);
     }
 
+    public List<Film> findAllByDirectorIdSorted(Long directorId, String sortBy) {
+        if (directorDbstorage.findById(directorId).isEmpty()) {
+            throw new NotFoundException("Режиссёр с id = " + directorId + "не найден.");
+        }
+        String sql = "SELECT * FROM films " +
+                "JOIN director_to_film ON films.film_id = director_to_film.film_id " +
+                "WHERE director_to_film.director_id = ?";
+        if ("likes".equals(sortBy)) {
+            sql += " ORDER BY (SELECT COUNT(user_id) FROM user_likes WHERE film_id = films.film_id) DESC";
+        } else if ("year".equals(sortBy)) {
+            sql += " ORDER BY films.release_date";
+        }
+        return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), directorId);
+    }
+
     @Override
     public List<Film> getBestFilms(int genreId, int year, int count) {
         String sql = "SELECT f.film_id " +
@@ -132,7 +146,8 @@ public class FilmDbStorage implements FilmStorage {
                     Objects.requireNonNull(userRows.getDate("release_date")).toLocalDate(),
                     userRows.getInt("duration"),
                     findMpaByCategoryId(userRows.getInt("category_id")),
-                    new ArrayList<>(findGenresByFilmId(id))
+                    new ArrayList<>(findGenresByFilmId(id)),
+                    new ArrayList<>(directorDbstorage.getFilmDirectors(id))
             );
             log.info("Найден фильм: {} {}", film.getId(), film.getName());
             return film;
@@ -205,7 +220,8 @@ public class FilmDbStorage implements FilmStorage {
                 Objects.requireNonNull(rs.getDate("release_date")).toLocalDate(),
                 rs.getInt("duration"),
                 findMpaByCategoryId(rs.getInt("category_id")),
-                new ArrayList<>(findGenresByFilmId(id))
+                new ArrayList<>(findGenresByFilmId(id)),
+                new ArrayList<>(directorDbstorage.getFilmDirectors(id))
         );
     }
 

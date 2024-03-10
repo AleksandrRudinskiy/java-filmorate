@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
+import org.springframework.stereotype.*;
+import ru.yandex.practicum.filmorate.exceptions.*;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -84,4 +84,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<Film> getCommonFilms(int userId, int friendId) {
         return null;
     }
+
+    @Override
+    public List<Film> findAllByDirectorIdSorted(Long directorId, String sortBy) {
+        return new ArrayList<>(films.values());
+    }
+
 }

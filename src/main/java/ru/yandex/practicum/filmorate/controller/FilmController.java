@@ -1,15 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import lombok.*;
+import lombok.extern.slf4j.*;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.*;
 
-import java.util.List;
+import java.util.*;
 
 @RestController
 @Slf4j
@@ -23,6 +21,14 @@ public class FilmController {
         List<Film> films = filmService.getFilms();
         log.info("Количество фильмов: {}.", films.size());
         return films;
+    }
+
+    @GetMapping("/films/director/{directorId}")
+    public ResponseEntity<List<Film>> getFilmsByDirectorSorted(
+            @PathVariable long directorId,
+            @RequestParam(required = false, defaultValue = "likes") String sortBy) {
+        List<Film> films = filmService.findAllByDirectorIdSorted(directorId, sortBy);
+        return ResponseEntity.ok(films);
     }
 
     @GetMapping("/films/popular")
