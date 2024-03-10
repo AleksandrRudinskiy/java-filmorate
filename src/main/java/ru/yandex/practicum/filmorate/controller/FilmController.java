@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
@@ -80,5 +81,18 @@ public class FilmController {
     public void deleteFilm(@PathVariable long filmId) {
         log.info("DELETE-Запрос на удаление фильма и всех связанных с ним данных.");
         filmService.deleteFilm(filmId);
+    }
+
+    @GetMapping(value = "/films/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> search(@RequestParam String query, @RequestParam String by) {
+        log.info("GET-Запрос на поиск фильма. Query = {}, by = {}",query,by);
+        return filmService.getFilms().stream()
+                .sorted((f1, f2) -> f2.getLikes().size() - f1.getLikes().size())
+                .filter(f -> ((by.toLowerCase().contains("title") && f.getDescription().toLowerCase().contains(query.toLowerCase()))
+                        || (by.toLowerCase().contains("director") && f.getLikes().stream().anyMatch(d ->d.equals(1L)))
+                        )
+                )
+                .collect(Collectors.toList());
     }
 }
