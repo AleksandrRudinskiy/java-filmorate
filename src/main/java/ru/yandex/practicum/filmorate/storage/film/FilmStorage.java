@@ -17,7 +17,7 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    List<Film> getBestFilms(int count);
+    List<Film> getBestFilms(int genreId, int year, int count);
 
     Film getFilmById(long id);
 

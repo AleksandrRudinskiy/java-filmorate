@@ -1,9 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.*;
+import lombok.*;
 
 @Data
 @Builder
@@ -12,4 +10,8 @@ import lombok.Data;
 public class Genre {
     private int id;
     private String name;
+
+    public Genre(int id) {
+        this.id = id;
+    }
 }
