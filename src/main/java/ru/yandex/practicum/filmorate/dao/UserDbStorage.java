@@ -1,28 +1,20 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import lombok.*;
+import lombok.extern.slf4j.*;
+import org.springframework.context.annotation.*;
+import org.springframework.jdbc.core.*;
+import org.springframework.jdbc.core.simple.*;
+import org.springframework.jdbc.support.rowset.*;
+import org.springframework.stereotype.*;
+import ru.yandex.practicum.filmorate.exceptions.*;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.film.*;
+import ru.yandex.practicum.filmorate.storage.user.*;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.sql.*;
+import java.util.*;
+import java.util.stream.*;
 
 @Primary
 @Component

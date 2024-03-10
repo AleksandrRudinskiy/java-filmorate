@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.*;
 
-import java.util.List;
+import java.util.*;
 
 public interface FilmStorage {
 
