@@ -15,6 +15,7 @@ import java.util.*;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final DirectorService directorService;
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
     public void addLike(long id, long userId) {
@@ -63,6 +64,9 @@ public class FilmService {
     public void add(Film film) {
         validateFilm(film);
         filmStorage.add(film);
+
+        List<Director> filmDirecors = directorService.executeAddDirectorListToFilm(film.getId(), film.getDirectors());
+        film.setDirectors(filmDirecors);
     }
 
     public Film update(Film film) {
@@ -70,12 +74,25 @@ public class FilmService {
             throw new NotFoundException("film с id = " + film.getId() + " не найден");
         }
         if (filmStorage.isAlreadyExists(film.getId())) {
+            List<Director> filmDirectors = directorService.executeAddDirectorListToFilm(film.getId(), film.getDirectors());
+            List<Director> currentFilmDirectors = directorService.getFilmDirectors(film.getId());
+            for (Director current : currentFilmDirectors) {
+                if (!filmDirectors.contains(current)) {
+                    directorService.deleteFilmDirector(film.getId(), current.getId());
+                }
+            }
+
+            film.setDirectors(filmDirectors);
             return filmStorage.update(film);
         } else if (!filmStorage.isAlreadyExists(film.getId()) && (film.getId() != 0)) {
             throw new RuntimeException();
         } else {
             return filmStorage.add(film);
         }
+    }
+
+    public List<Film> findAllByDirectorIdSorted(Long directorId, String sortBy) {
+        return filmStorage.findAllByDirectorIdSorted(directorId, sortBy);
     }
 
     public Film getFilmById(long id) {

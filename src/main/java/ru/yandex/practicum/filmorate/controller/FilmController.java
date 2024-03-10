@@ -23,6 +23,14 @@ public class FilmController {
         return films;
     }
 
+    @GetMapping("/films/director/{directorId}")
+    public ResponseEntity<List<Film>> getFilmsByDirectorSorted(
+            @PathVariable long directorId,
+            @RequestParam(required = false, defaultValue = "likes") String sortBy) {
+        List<Film> films = filmService.findAllByDirectorIdSorted(directorId, sortBy);
+        return ResponseEntity.ok(films);
+    }
+
     @GetMapping("/films/popular")
     public List<Film> findBestFilms(
             @RequestParam(defaultValue = "10", required = false) Integer count) {

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 
 import javax.validation.constraints.*;
-import java.time.*;
+import java.time.LocalDate;
 import java.util.*;
 
 @Data
@@ -22,8 +22,9 @@ public class Film {
     private Mpa mpa;
     private List<Genre> genres;
     private Set<Long> likes = new HashSet<>();
+    private List<Director> directors;
 
-    public Film(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa, List<Genre> genres) {
+    public Film(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa, List<Genre> genres, List<Director> directors) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -31,6 +32,7 @@ public class Film {
         this.duration = duration;
         this.mpa = mpa;
         this.genres = genres;
+        this.directors = directors;
     }
 
     public Map<String, Object> toMap() {
