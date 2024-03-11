@@ -84,4 +84,11 @@ public class UserController {
         log.info("DELETE-Запрос на удаление пользователя и связанных с ним данных.");
         userService.deleteUser(userId);
     }
+
+    @GetMapping("/users/{id}/feed")
+    public List<Event> getFeed(@PathVariable long userId) {
+        log.info("GET-Запрос на получение ленты событий пользователя с id = {}.", userId);
+        //toDo
+        return userService.getFeed(userId);
+    }
 }
