@@ -1,18 +1,28 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import lombok.*;
-import org.springframework.jdbc.core.namedparam.*;
-import org.springframework.jdbc.support.*;
-import org.springframework.stereotype.*;
-import ru.yandex.practicum.filmorate.model.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.Review;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class ReviewDaoImpl implements ReviewDao {
     private final NamedParameterJdbcOperations jdbcOperations;
+    private final EventDao eventDaoImpl;
 
     @Override
     public List<Review> getAll(Optional<Long> filmId, long count) {
@@ -64,7 +74,13 @@ public class ReviewDaoImpl implements ReviewDao {
         parameterSource.addValue("film_id", review.getFilmId());
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcOperations.update(sql, parameterSource, keyHolder);
-        review.setReviewId(keyHolder.getKey().longValue());
+        review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+
+        eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                review.getUserId(),
+                EventType.REVIEW,
+                Operation.ADD,
+                review.getReviewId()));
         return review;
     }
 
@@ -78,8 +94,19 @@ public class ReviewDaoImpl implements ReviewDao {
         parameterSource.addValue("review_id", review.getReviewId());
         parameterSource.addValue("content", review.getContent());
         parameterSource.addValue("is_positive", review.getIsPositive());
+
+
         jdbcOperations.update(sql, parameterSource);
-        return get(review.getReviewId()).get();
+
+        Review updateReview = get(review.getReviewId()).get();
+
+        eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                updateReview.getUserId(),
+                EventType.REVIEW,
+                Operation.UPDATE,
+                updateReview.getReviewId())
+        );
+        return updateReview;
     }
 
     @Override
@@ -87,6 +114,12 @@ public class ReviewDaoImpl implements ReviewDao {
         MapSqlParameterSource parameterSource = new MapSqlParameterSource("review_id", id);
         String sql = "DELETE FROM review " +
                 "WHERE review_id = :review_id";
+        eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                get(id).get().getUserId(),
+                EventType.REVIEW,
+                Operation.REMOVE,
+                get(id).get().getReviewId())
+        );
         jdbcOperations.update(sql, parameterSource);
     }
 

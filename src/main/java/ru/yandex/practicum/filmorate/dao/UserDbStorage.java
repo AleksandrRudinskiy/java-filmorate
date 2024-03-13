@@ -1,20 +1,22 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import lombok.*;
-import lombok.extern.slf4j.*;
-import org.springframework.context.annotation.*;
-import org.springframework.jdbc.core.*;
-import org.springframework.jdbc.core.simple.*;
-import org.springframework.jdbc.support.rowset.*;
-import org.springframework.stereotype.*;
-import ru.yandex.practicum.filmorate.exceptions.*;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.storage.film.*;
-import ru.yandex.practicum.filmorate.storage.user.*;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
 
 @Primary
 @Component
@@ -23,6 +25,7 @@ import java.util.stream.*;
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmStorage filmStorage;
+    private final EventDao eventDaoImpl;
 
     @Override
     public User add(User user) {
@@ -56,16 +59,6 @@ public class UserDbStorage implements UserStorage {
         List<User> users1 = new ArrayList<>(userMap.values());
         users1.forEach(u -> u.setFriends(userFriends.get(u.getId())));
         return users1;
-    }
-
-    private User makeUser(ResultSet rs) throws SQLException {
-        return new User(
-                rs.getLong("user_id"),
-                rs.getString("name"),
-                rs.getString("email"),
-                rs.getString("login"),
-                Objects.requireNonNull(rs.getDate("birthday")).toLocalDate()
-        );
     }
 
     @Override
@@ -107,6 +100,12 @@ public class UserDbStorage implements UserStorage {
     public User addFriend(long id, long friendId) {
         String sql = "insert into user_friends values (?, ?, false)";
         jdbcTemplate.update(sql, id, friendId);
+        Event event = new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                id,
+                EventType.FRIEND,
+                Operation.ADD,
+                friendId);
+        eventDaoImpl.add(event);
         return getUserById(id);
     }
 
@@ -114,9 +113,14 @@ public class UserDbStorage implements UserStorage {
     public User deleteFriend(long id, long friendId) {
         String sql = "delete from user_friends where user_id  = ? and friend_id = ?";
         jdbcTemplate.update(sql, id, friendId);
+        eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                id,
+                EventType.FRIEND,
+                Operation.REMOVE,
+                friendId)
+        );
         return getUserById(id);
     }
-
 
     /**
      * Удаляет пользователя из базы данных на основе их уникального идентификатора.
@@ -185,7 +189,7 @@ public class UserDbStorage implements UserStorage {
         List<Long> thisUserLikes = usersLikes.get(id);
         usersLikes.remove(id);
         Long userIdSecond = -1L;
-        Long maxCountIntersections = -1L;
+        long maxCountIntersections = -1L;
         for (Long userId : usersLikes.keySet()) {
             Long countIntersections = findIntersectionsTwoSets(thisUserLikes, usersLikes.get(userId));
             if (maxCountIntersections < countIntersections) {
@@ -206,6 +210,13 @@ public class UserDbStorage implements UserStorage {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Event> getFeed(long userId) {
+        String sql = "SELECT * FROM events WHERE user_id = ?";
+        getUserById(userId);
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeEvent(rs), userId);
+    }
+
     /**
      * Находит количество элементов в пересечении двух множеств.
      *
@@ -216,9 +227,27 @@ public class UserDbStorage implements UserStorage {
     private Long findIntersectionsTwoSets(List<Long> listOne, List<Long> listSecond) {
         Set<Long> setOne = new HashSet<>(listOne);
         Set<Long> setSecond = new HashSet<>(listSecond);
-
         setOne.retainAll(setSecond);
-
         return (long) setOne.size();
+    }
+
+    private User makeUser(ResultSet rs) throws SQLException {
+        return new User(
+                rs.getLong("user_id"),
+                rs.getString("name"),
+                rs.getString("email"),
+                rs.getString("login"),
+                Objects.requireNonNull(rs.getDate("birthday")).toLocalDate()
+        );
+    }
+
+    private Event makeEvent(ResultSet rs) throws SQLException {
+        return new Event(rs.getTimestamp("time_stamp").getTime(),
+                rs.getLong("user_id"),
+                EventType.valueOf(rs.getString("event_type")),
+                Operation.valueOf(rs.getString("operation")),
+                rs.getLong("event_id"),
+                rs.getLong("entity_id")
+        );
     }
 }

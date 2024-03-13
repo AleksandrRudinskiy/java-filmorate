@@ -1,10 +1,13 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.*;
+import lombok.Data;
 
-import javax.validation.constraints.*;
-import java.time.*;
-import java.util.*;
+import javax.validation.constraints.Email;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Data
 public class User {

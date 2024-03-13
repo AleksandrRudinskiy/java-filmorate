@@ -1,11 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.*;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 
-import java.util.*;
+import java.util.Map;
 
 @ControllerAdvice
 @Slf4j

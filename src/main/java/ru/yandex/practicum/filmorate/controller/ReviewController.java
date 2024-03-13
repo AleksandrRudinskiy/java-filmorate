@@ -1,13 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.*;
-import lombok.extern.slf4j.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.service.*;
+import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.service.ReviewService;
 
-import javax.validation.*;
-import java.util.*;
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/reviews")

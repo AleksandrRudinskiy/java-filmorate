@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import org.springframework.stereotype.*;
-import ru.yandex.practicum.filmorate.exceptions.*;
-import ru.yandex.practicum.filmorate.model.*;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -120,6 +122,11 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public List<Film> getRecommendations(long id) {
         //TODO
+        return null;
+    }
+
+    @Override
+    public List<Event> getFeed(long userId) {
         return null;
     }
 }

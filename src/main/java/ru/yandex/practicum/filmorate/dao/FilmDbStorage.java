@@ -8,13 +8,12 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,6 +25,8 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
 
     private final DirectorDaoImpl directorDbstorage;
+
+    private final EventDao eventDaoImpl;
 
     @Override
     public Film add(Film film) {
@@ -121,17 +122,22 @@ public class FilmDbStorage implements FilmStorage {
         Genre genre = getGenreById(genreId);
         Set<Film> films = new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), count));
         if (genreId == 0 && year != 0) {
-            return films.stream().filter(f -> f.getReleaseDate().getYear() == year).collect(Collectors.toList());
+            return films.stream()
+                    .filter(f -> f.getReleaseDate().getYear() == year)
+                    .sorted((f1, f2) -> Math.toIntExact(f1.getId() - f2.getId()))
+                    .collect(Collectors.toList());
         } else if (year == 0 && genreId != 0) {
             log.info("Запрос на топ фильмов с жанром {}", genreId);
             log.info("Искомый жанр {}", genre);
             return films.stream()
                     .filter(f -> f.getGenres().contains(genre))
+                    .sorted((f1, f2) -> Math.toIntExact(f1.getId() - f2.getId()))
                     .collect(Collectors.toList());
         } else if (year != 0) {
             return films.stream()
                     .filter(f -> f.getReleaseDate().getYear() == year)
                     .filter(f -> f.getGenres().contains(genre))
+                    .sorted((f1, f2) -> Math.toIntExact(f1.getId() - f2.getId()))
                     .collect(Collectors.toList());
         } else {
             return new ArrayList<>(films);
@@ -164,6 +170,12 @@ public class FilmDbStorage implements FilmStorage {
     public Film addLike(long id, long userId) {
         String sql = "insert into user_likes values(?, ?)";
         jdbcTemplate.update(sql, id, userId);
+        Event event = new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                userId,
+                EventType.LIKE,
+                Operation.ADD,
+                id);
+        eventDaoImpl.add(event);
         return getFilmById(id);
     }
 
@@ -198,6 +210,13 @@ public class FilmDbStorage implements FilmStorage {
     public Film deleteLike(long id, long userId) {
         String sql = "DELETE FROM user_likes WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, id, userId);
+        Event event = new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                userId,
+                EventType.LIKE,
+                Operation.REMOVE,
+                id);
+        eventDaoImpl.add(event);
+
         return getFilmById(id);
     }
 

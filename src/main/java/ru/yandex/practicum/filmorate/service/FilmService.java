@@ -22,6 +22,7 @@ public class FilmService {
     private final LocalDate startReleaseDate = LocalDate.of(1895, 12, 28);
 
     public void addLike(long id, long userId) {
+        filmStorage.getFilmById(id);
         filmStorage.addLike(id, userId);
     }
 

@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Review;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 public interface ReviewService {
     List<Review> getAll(final Optional<Long> filmId, final long count);

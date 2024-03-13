@@ -1,13 +1,16 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.*;
-import org.springframework.stereotype.*;
-import ru.yandex.practicum.filmorate.exceptions.*;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.storage.user.*;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.time.*;
-import java.util.*;
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -39,7 +42,10 @@ public class UserService {
     public User addFriend(long id, long friendId) {
         userStorage.isAlreadyExists(id);
         userStorage.isAlreadyExists(friendId);
-        return userStorage.addFriend(id, friendId);
+        User user = userStorage.addFriend(id, friendId);
+
+
+        return user;
     }
 
     public User deleteFriend(long id, long friendId) {
@@ -75,6 +81,10 @@ public class UserService {
 
     public List<Film> getRecommendations(long id) {
         return userStorage.getRecommendations(id);
+    }
+
+    public List<Event> getFeed(long userId) {
+        return userStorage.getFeed(userId);
     }
 
     private void validateUser(User user) {
