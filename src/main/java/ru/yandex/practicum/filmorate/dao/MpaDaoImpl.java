@@ -1,15 +1,16 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import lombok.*;
-import lombok.extern.slf4j.*;
-import org.springframework.jdbc.core.*;
-import org.springframework.jdbc.support.rowset.*;
-import org.springframework.stereotype.*;
-import ru.yandex.practicum.filmorate.exceptions.*;
-import ru.yandex.practicum.filmorate.model.*;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 @Component
 @Slf4j

@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import lombok.*;
+import lombok.Getter;
 
 @Getter
 public class FilmsDbGenres {

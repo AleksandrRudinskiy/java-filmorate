@@ -1,13 +1,16 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.*;
-import org.springframework.stereotype.*;
-import ru.yandex.practicum.filmorate.exceptions.*;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.storage.user.*;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.time.*;
-import java.util.*;
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -40,11 +43,6 @@ public class UserService {
         userStorage.isAlreadyExists(id);
         userStorage.isAlreadyExists(friendId);
         User user = userStorage.addFriend(id, friendId);
-
-
-
-
-
 
 
         return user;

@@ -1,14 +1,17 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.*;
-import lombok.extern.slf4j.*;
-import org.springframework.http.*;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.service.*;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import javax.validation.*;
-import java.util.*;
+import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @Slf4j

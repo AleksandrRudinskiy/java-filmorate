@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.*;
-import org.springframework.stereotype.*;
-import ru.yandex.practicum.filmorate.dao.*;
-import ru.yandex.practicum.filmorate.exceptions.*;
-import ru.yandex.practicum.filmorate.model.*;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.GenreDao;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.*;
+import java.util.List;
 
 @Service
 @AllArgsConstructor

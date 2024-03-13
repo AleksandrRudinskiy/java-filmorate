@@ -96,11 +96,9 @@ public class ReviewDaoImpl implements ReviewDao {
         parameterSource.addValue("is_positive", review.getIsPositive());
 
 
-
-
         jdbcOperations.update(sql, parameterSource);
 
-       Review updateReview = get(review.getReviewId()).get();
+        Review updateReview = get(review.getReviewId()).get();
 
         eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
                 updateReview.getUserId(),
