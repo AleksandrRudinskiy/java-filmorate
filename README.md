@@ -4,7 +4,7 @@
 https://miro.com/app/board/uXjVNkkgjAk=/
 
 ## ER-диаграмма
-![ER](ER-schema-java-filmorate.png)
+![ER](ER-schema-java-filmorate1.png)
 ## Примеры запросов
 ### Получение N наиболее популярных фильмов
 
