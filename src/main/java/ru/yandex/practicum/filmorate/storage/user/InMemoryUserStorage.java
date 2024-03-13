@@ -122,4 +122,9 @@ public class InMemoryUserStorage implements UserStorage {
         //TODO
         return null;
     }
+
+    @Override
+    public List<Event> getFeed(long userId) {
+        return null;
+    }
 }

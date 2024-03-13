@@ -27,4 +27,6 @@ public interface UserStorage {
     List<User> getCommonFriends(long id, long otherId);
 
     List<Film> getRecommendations(long id);
+
+    List<Event> getFeed(long userId);
 }

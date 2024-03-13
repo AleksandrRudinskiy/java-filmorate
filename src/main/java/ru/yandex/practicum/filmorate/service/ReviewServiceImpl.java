@@ -20,7 +20,6 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<Review> getAll(Optional<Long> filmId, long count) {
         filmId.ifPresent(filmDao::getFilmById);
-
         return reviewDao.getAll(filmId, count);
     }
 
@@ -34,7 +33,6 @@ public class ReviewServiceImpl implements ReviewService {
     public Review create(Review review) {
         userDao.getUserById(review.getUserId());
         filmDao.getFilmById(review.getFilmId());
-
         return reviewDao.create(review);
     }
 
