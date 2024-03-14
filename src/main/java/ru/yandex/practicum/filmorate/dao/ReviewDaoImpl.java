@@ -25,7 +25,7 @@ public class ReviewDaoImpl implements ReviewDao {
     private final EventDao eventDaoImpl;
 
     @Override
-    public List<Review> getAll(Optional<Long> filmId, long count) {
+    public List<Review> getAll(long filmId, long count) {
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         String sql = "SELECT r.review_id, " +
                 "r.content, " +
@@ -36,9 +36,9 @@ public class ReviewDaoImpl implements ReviewDao {
                 "FROM review_likes AS rl " +
                 "WHERE rl.review_id = r.review_id) AS useful " +
                 "FROM review AS r ";
-        if (filmId.isPresent()) {
+        if (filmId != 0) {
             sql += "WHERE r.film_id = :film_id ";
-            parameterSource.addValue("film_id", filmId.get());
+            parameterSource.addValue("film_id", filmId);
         }
         sql += "ORDER BY useful DESC " +
                 "LIMIT :count";

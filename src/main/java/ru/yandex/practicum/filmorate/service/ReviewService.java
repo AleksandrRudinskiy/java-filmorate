@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReviewService {
-    List<Review> getAll(final Optional<Long> filmId, final long count);
+    List<Review> getAll(final long filmId, final long count);
 
     Review get(final long id);
 

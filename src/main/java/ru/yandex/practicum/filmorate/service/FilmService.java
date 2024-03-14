@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -109,6 +110,17 @@ public class FilmService {
 
     public void deleteFilm(long filmId) {
         filmStorage.deleteFilm(filmId);
+    }
+
+
+    public List<Film> search(String query, String by) {
+       return getFilms().stream()
+                .filter(f -> ((by.toLowerCase().contains("title") && f.getDescription().toLowerCase().contains(query.toLowerCase()))
+                                || (by.toLowerCase().contains("director") && f.getDirectors().stream().anyMatch(d -> d.getName().toLowerCase().contains(query.toLowerCase())))
+                        )
+                )
+                .sorted((f1, f2) -> getLikes(f2.getId()).size() - getLikes(f1.getId()).size())
+                .collect(Collectors.toList());
     }
 
     private void validateFilm(Film film) {

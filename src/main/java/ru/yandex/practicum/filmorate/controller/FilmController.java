@@ -97,12 +97,6 @@ public class FilmController {
     @ResponseStatus(HttpStatus.OK)
     public List<Film> search(@RequestParam String query, @RequestParam String by) {
         log.info("GET-Запрос на поиск фильма. Query = {}, by = {}", query, by);
-        return filmService.getFilms().stream()
-                .filter(f -> ((by.toLowerCase().contains("title") && f.getDescription().toLowerCase().contains(query.toLowerCase()))
-                                || (by.toLowerCase().contains("director") && f.getDirectors().stream().anyMatch(d -> d.getName().toLowerCase().contains(query.toLowerCase())))
-                        )
-                )
-                .sorted((f1, f2) -> filmService.getLikes(f2.getId()).size() - filmService.getLikes(f1.getId()).size())
-                .collect(Collectors.toList());
+        return filmService.search(query, by);
     }
 }

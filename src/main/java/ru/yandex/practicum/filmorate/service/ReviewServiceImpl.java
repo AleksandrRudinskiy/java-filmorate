@@ -20,8 +20,10 @@ public class ReviewServiceImpl implements ReviewService {
     private final UserStorage userDao;
 
     @Override
-    public List<Review> getAll(Optional<Long> filmId, long count) {
-        filmId.ifPresent(filmDao::getFilmById);
+    public List<Review> getAll(long filmId, long count) {
+        if (filmId != 0) {
+            filmDao.getFilmById(filmId);
+        }
         return reviewDao.getAll(filmId, count);
     }
 
