@@ -18,8 +18,6 @@ public interface DirectorDao {
 
     void deleteFilmDirector(long filmId, long directorId);
 
-    void addFilmDirector(long filmId, long directorId);
-
     List<Director> getFilmDirectors(long filmId);
 
     void checkExists(long id);

@@ -107,12 +107,6 @@ public class DirectorDaoImpl implements DirectorDao {
     }
 
     @Override
-    public void addFilmDirector(long filmId, long directorId) {
-        String sqlQuery = "INSERT INTO DIRECTOR_TO_FILM (FILM_ID, DIRECTOR_ID) VALUES (?, ?)";
-        jdbcTemplate.update(sqlQuery, filmId, directorId);
-    }
-
-    @Override
     public void checkExists(long id) {
         String sql = "SELECT DIRECTOR_ID FROM DIRECTOR WHERE DIRECTOR_ID = ?";
         SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, id);

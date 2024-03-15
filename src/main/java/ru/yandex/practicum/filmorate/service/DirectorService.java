@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.dao.DirectorDao;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,26 +33,14 @@ public class DirectorService {
         if (directors == null || directors.isEmpty()) {
             return Collections.emptyList();
         }
-
+        //Формируем список Режиссёров
         List<Long> directorIds = directors.stream()
                 .map(Director::getId)
                 .collect(Collectors.toList());
-
+        //Делаем batchUpdate
         directorDao.addFilmDirectorsBatch(filmId, directorIds);
-
         // Возвращаем обновленный список режиссеров для фильма
         return getFilmDirectors(filmId);
-    }
-
-    @Transactional
-    private Director executeAddDirectorToFilm(long filmId, long directorId) {
-        return Optional.of(directorDao.findById(directorId)).map(director -> {
-            directorDao.addFilmDirector(filmId, directorId);
-            return director;
-        }).orElseThrow(() -> {
-            log.error("Director with id {} does not exist", directorId);
-            return new NotFoundException("Не удалось добавить режиссера для фильма");
-        });
     }
 
     public List<Director> getDirectors() {
