@@ -86,14 +86,22 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public List<Film> findAllByDirectorIdSorted(Long directorId, String sortBy) {
+        //Проверяем наличие режиссёра
         directorDbStorage.findById(directorId);
+
+        //Поля сортировки. Легко расширяется без необходимости делать else if
+        Map<String, String> validSortFields = Map.of(
+                "likes", "(SELECT COUNT(user_id) FROM user_likes WHERE film_id = films.film_id) DESC",
+                "year", "films.release_date"
+        );
+
         String sql = "SELECT * FROM films " +
                 "JOIN director_to_film ON films.film_id = director_to_film.film_id " +
                 "WHERE director_to_film.director_id = ?";
-        if ("likes".equals(sortBy)) {
-            sql += " ORDER BY (SELECT COUNT(user_id) FROM user_likes WHERE film_id = films.film_id) DESC";
-        } else if ("year".equals(sortBy)) {
-            sql += " ORDER BY films.release_date";
+
+        //Применяем сортировку
+        if (validSortFields.containsKey(sortBy)) {
+            sql += " ORDER BY " + validSortFields.get(sortBy);
         }
         return jdbcTemplate.query(sql, (rs, rowNum) -> getFilmById(rs.getInt("film_id")), directorId);
     }
