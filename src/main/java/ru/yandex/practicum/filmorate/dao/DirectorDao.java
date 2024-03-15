@@ -24,4 +24,8 @@ public interface DirectorDao {
 
     void checkExists(long id);
 
+    boolean doAllDirectorsExist(List<Long> directorIds);
+
+    void addFilmDirectorsBatch(long filmId, List<Long> directorIds);
+
 }

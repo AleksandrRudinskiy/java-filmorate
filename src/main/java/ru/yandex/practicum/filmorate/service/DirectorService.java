@@ -32,11 +32,18 @@ public class DirectorService {
 
     @Transactional
     public List<Director> executeAddDirectorListToFilm(long filmId, List<Director> directors) {
-        return Optional.ofNullable(directors)
-                .orElseGet(Collections::emptyList)
-                .stream()
-                .map(director -> executeAddDirectorToFilm(filmId, director.getId()))
+        if (directors == null || directors.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> directorIds = directors.stream()
+                .map(Director::getId)
                 .collect(Collectors.toList());
+
+        directorDao.addFilmDirectorsBatch(filmId, directorIds);
+
+        // Возвращаем обновленный список режиссеров для фильма
+        return getFilmDirectors(filmId);
     }
 
     @Transactional

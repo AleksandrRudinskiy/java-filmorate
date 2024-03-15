@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
@@ -13,14 +15,18 @@ import ru.yandex.practicum.filmorate.model.Director;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
 @Repository
 public class DirectorDaoImpl implements DirectorDao {
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
     public void deleteDirector(long directorId) {
@@ -117,5 +123,35 @@ public class DirectorDaoImpl implements DirectorDao {
         if (result == 0) {
             throw new NotFoundException("Режиссер с id = " + id + " не найден.");
         }
+    }
+
+    @Override
+    public boolean doAllDirectorsExist(List<Long> directorIds) {
+        String sql = "SELECT COUNT(*) FROM DIRECTOR WHERE DIRECTOR_ID IN (:ids)";
+        Map<String, List<Long>> params = Collections.singletonMap("ids", directorIds);
+        int count = namedParameterJdbcTemplate.queryForObject(sql, params, Integer.class);
+        return count == directorIds.size();
+    }
+
+    @Override
+    public void addFilmDirectorsBatch(long filmId, List<Long> directorIds) {
+        //Проверка существования режиссёров
+        if (!doAllDirectorsExist(directorIds)) {
+            throw new NotFoundException("addFilmDirectorsBatch : one or more directors do not exist");
+        }
+        //Готовим запрос
+        String sql = "INSERT INTO DIRECTOR_TO_FILM (FILM_ID, DIRECTOR_ID) VALUES (:filmId, :directorId)";
+        //Готовим список мап batchValues. Для каждого directorId из directorIds делаем мапу filmId - directorId
+        List<Map<String, ?>> batchValues = new ArrayList<>();
+        for (Long directorId : directorIds) {
+            batchValues.add(
+                    new MapSqlParameterSource()
+                            .addValue("filmId", filmId)
+                            .addValue("directorId", directorId)
+                            .getValues()
+            );
+        }
+        //Вставляем все собранные мапы из списка batchValues
+        namedParameterJdbcTemplate.batchUpdate(sql, batchValues.toArray(new Map[directorIds.size()]));
     }
 }
