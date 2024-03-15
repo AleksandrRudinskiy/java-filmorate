@@ -121,7 +121,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<Film> getRecommendations(long id) {
-        //TODO
         return null;
     }
 

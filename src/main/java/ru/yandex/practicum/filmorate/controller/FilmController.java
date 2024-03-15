@@ -27,11 +27,11 @@ public class FilmController {
     }
 
     @GetMapping("/films/director/{directorId}")
-    public ResponseEntity<List<Film>> getFilmsByDirectorSorted(
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getFilmsByDirectorSorted(
             @PathVariable long directorId,
             @RequestParam(required = false, defaultValue = "likes") String sortBy) {
-        List<Film> films = filmService.findAllByDirectorIdSorted(directorId, sortBy);
-        return ResponseEntity.ok(films);
+        return filmService.findAllByDirectorIdSorted(directorId, sortBy);
     }
 
     @GetMapping("/films/popular")

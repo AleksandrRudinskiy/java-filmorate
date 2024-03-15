@@ -101,6 +101,7 @@ public class FilmService {
     }
 
     public List<Film> findAllByDirectorIdSorted(Long directorId, String sortBy) {
+        directorService.getDirectorById(directorId);
         return filmStorage.findAllByDirectorIdSorted(directorId, sortBy);
     }
 

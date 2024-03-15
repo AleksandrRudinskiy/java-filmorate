@@ -172,7 +172,7 @@ public class UserDbStorage implements UserStorage {
      *                           <li>Наконец, он возвращает список фильмов, которые понравились этому пользователю, но которые целевой пользователь еще не видел.</li>
      *                           </ul>
      */
-    @Override
+
     public List<Film> getRecommendations(long id) {
         getUserById(id);
         Map<Long, List<Long>> usersLikes = new HashMap<>();
@@ -210,7 +210,6 @@ public class UserDbStorage implements UserStorage {
                 .collect(Collectors.toList());
     }
 
-    @Override
     public List<Event> getFeed(long userId) {
         String sql = "SELECT * FROM events WHERE user_id = ?";
         getUserById(userId);

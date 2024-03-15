@@ -41,7 +41,7 @@ public class DirectorService {
 
     @Transactional
     private Director executeAddDirectorToFilm(long filmId, long directorId) {
-        return directorDao.findById(directorId).map(director -> {
+        return Optional.of(directorDao.findById(directorId)).map(director -> {
             directorDao.addFilmDirector(filmId, directorId);
             return director;
         }).orElseThrow(() -> {
@@ -55,8 +55,11 @@ public class DirectorService {
     }
 
     public Director getDirectorById(long id) {
-        return directorDao.findById(id)
-                .orElseThrow(() -> new NotFoundException("Режисер с идентификатором " + id + " не найден."));
+        if (directorDao.findById(id) != null) {
+            return directorDao.findById(id);
+        } else {
+            throw new NotFoundException("Режисер с идентификатором " + id + " не найден.");
+        }
     }
 
     @Transactional
@@ -70,11 +73,8 @@ public class DirectorService {
 
     @Transactional
     public void deleteDirector(long id) {
-        if (directorDao.findById(id).isPresent()) {
-            directorDao.deleteDirector(id);
-        } else {
-            throw new NotFoundException("Режисер с идентификатором " + id + " не найден.");
-        }
+        directorDao.findById(id);
+        directorDao.deleteDirector(id);
     }
 
     public void deleteFilmDirector(long filmId, long directorId) {

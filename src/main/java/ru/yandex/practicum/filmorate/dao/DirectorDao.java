@@ -11,7 +11,7 @@ public interface DirectorDao {
 
     Collection<Director> findAll();
 
-    Optional<Director> findById(long id);
+    Director findById(long id);
 
     void updateDirector(Director director);
 

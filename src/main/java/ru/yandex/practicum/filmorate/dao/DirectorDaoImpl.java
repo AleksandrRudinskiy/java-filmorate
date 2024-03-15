@@ -67,13 +67,13 @@ public class DirectorDaoImpl implements DirectorDao {
     }
 
     @Override
-    public Optional<Director> findById(long id) {
+    public Director findById(long id) {
         try {
             String sqlQuery = "select DIRECTOR_ID,DIRECTOR_NAME from DIRECTOR where DIRECTOR_ID = ?";
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, this::mapRowToDirector, id));
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToDirector, id);
         } catch (EmptyResultDataAccessException e) {
             log.info("not found director by id: {}", id);
-            return Optional.empty();
+            return null;
         }
     }
 

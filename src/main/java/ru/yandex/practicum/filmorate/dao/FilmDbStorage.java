@@ -96,9 +96,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public List<Film> findAllByDirectorIdSorted(Long directorId, String sortBy) {
-        if (directorDbstorage.findById(directorId).isEmpty()) {
-            throw new NotFoundException("Режиссёр с id = " + directorId + "не найден.");
-        }
+        directorDbstorage.findById(directorId);
         String sql = "SELECT * FROM films " +
                 "JOIN director_to_film ON films.film_id = director_to_film.film_id " +
                 "WHERE director_to_film.director_id = ?";
