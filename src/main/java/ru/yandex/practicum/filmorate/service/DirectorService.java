@@ -55,11 +55,8 @@ public class DirectorService {
     }
 
     public Director getDirectorById(long id) {
-        if (directorDao.findById(id) != null) {
-            return directorDao.findById(id);
-        } else {
-            throw new NotFoundException("Режисер с идентификатором " + id + " не найден.");
-        }
+        directorDao.checkExists(id);
+        return directorDao.findById(id);
     }
 
     @Transactional
@@ -73,7 +70,7 @@ public class DirectorService {
 
     @Transactional
     public void deleteDirector(long id) {
-        directorDao.findById(id);
+        directorDao.checkExists(id);
         directorDao.deleteDirector(id);
     }
 

@@ -31,4 +31,6 @@ public interface UserStorage {
     List<Film> getRecommendations(long id);
 
     List<Event> getFeed(long userId);
+
+    void checkExists(long id);
 }

@@ -6,6 +6,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -14,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -55,14 +55,12 @@ public class DirectorDaoImpl implements DirectorDao {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("DIRECTOR")
                 .usingGeneratedKeyColumns("DIRECTOR_ID");
-
         return simpleJdbcInsert.executeAndReturnKey(director.toMap()).intValue();
     }
 
     @Override
     public Collection<Director> findAll() {
         String sqlQuery = "select DIRECTOR_ID,DIRECTOR_NAME from DIRECTOR";
-
         return jdbcTemplate.query(sqlQuery, this::mapRowToDirector);
     }
 
@@ -106,5 +104,18 @@ public class DirectorDaoImpl implements DirectorDao {
     public void addFilmDirector(long filmId, long directorId) {
         String sqlQuery = "INSERT INTO DIRECTOR_TO_FILM (FILM_ID, DIRECTOR_ID) VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery, filmId, directorId);
+    }
+
+    @Override
+    public void checkExists(long id) {
+        String sql = "SELECT DIRECTOR_ID FROM DIRECTOR WHERE DIRECTOR_ID = ?";
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, id);
+        long result = 0;
+        if (userRows.next()) {
+            result = userRows.getLong("DIRECTOR_ID");
+        }
+        if (result == 0) {
+            throw new NotFoundException("Режиссер с id = " + id + " не найден.");
+        }
     }
 }

@@ -174,7 +174,7 @@ public class UserDbStorage implements UserStorage {
      */
 
     public List<Film> getRecommendations(long id) {
-        getUserById(id);
+        checkExists(id);
         Map<Long, List<Long>> usersLikes = new HashMap<>();
         String sql = "SELECT * FROM user_likes";
         SqlRowSet srs = jdbcTemplate.queryForRowSet(sql);
@@ -238,6 +238,19 @@ public class UserDbStorage implements UserStorage {
                 rs.getString("login"),
                 Objects.requireNonNull(rs.getDate("birthday")).toLocalDate()
         );
+    }
+
+    @Override
+    public void checkExists(long id) {
+        String sql = "SELECT user_id FROM users WHERE user_id = ?";
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, id);
+        long result = 0;
+        if (userRows.next()) {
+            result = userRows.getLong("user_id");
+        }
+        if (result == 0) {
+            throw new NotFoundException("Пользоватея с id = " + id + " не найдено.");
+        }
     }
 
     private Event makeEvent(ResultSet rs) throws SQLException {

@@ -115,7 +115,7 @@ public class FilmService {
 
 
     public List<Film> search(String query, String by) {
-       return getFilms().stream()
+        return getFilms().stream()
                 .filter(f -> ((by.toLowerCase().contains("title") && f.getDescription().toLowerCase().contains(query.toLowerCase()))
                                 || (by.toLowerCase().contains("director") && f.getDirectors().stream().anyMatch(d -> d.getName().toLowerCase().contains(query.toLowerCase())))
                         )

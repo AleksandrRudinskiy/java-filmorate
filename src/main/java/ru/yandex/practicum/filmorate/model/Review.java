@@ -1,7 +1,8 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -9,18 +10,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-@Builder
+@Getter
+@AllArgsConstructor
 public class Review {
-    Long reviewId;
+    private Long reviewId;
     @NotBlank
-    String content;
+    private String content;
     @NotNull
-    Boolean isPositive;
+    private Boolean isPositive;
     @NotNull
-    Long userId;
+    private Long userId;
     @NotNull
-    Long filmId;
-    int useful;
+    private Long filmId;
+    private int useful;
 
     public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();
@@ -30,4 +32,5 @@ public class Review {
         values.put("film_id", filmId);
         return values;
     }
+
 }

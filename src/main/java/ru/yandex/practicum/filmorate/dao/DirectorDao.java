@@ -4,7 +4,6 @@ import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public interface DirectorDao {
     int add(Director director);
@@ -22,4 +21,7 @@ public interface DirectorDao {
     void addFilmDirector(long filmId, long directorId);
 
     List<Director> getFilmDirectors(long filmId);
+
+    void checkExists(long id);
+
 }

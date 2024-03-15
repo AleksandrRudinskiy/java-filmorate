@@ -23,14 +23,12 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    private final DirectorDaoImpl directorDbstorage;
-
+    private final DirectorDaoImpl directorDbStorage;
     private final EventDao eventDaoImpl;
 
     @Override
     public Film add(Film film) {
-        log.info("выполнен метод add");
+        log.info("Выполнен метод add");
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("films")
                 .usingGeneratedKeyColumns("film_id");
@@ -51,21 +49,13 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query("SELECT * FROM films", this::makeFilm);
     }
 
-    /**
-     * Возвращает список фильмов, которые понравились обоим пользователям.
-     *
-     * @param userId   идентификатор первого пользователя.
-     * @param friendId идентификатор второго пользователя.
-     * @return List<Film> возвращает список фильмов, которые понравились обоим пользователям.
-     */
     @Override
     public List<Film> getCommonFilms(int userId, int friendId) {
-        String sql =
-                "SELECT f.* " +
-                        "FROM films AS f " +
-                        "JOIN user_likes AS ul_1 ON f.film_id = ul_1.film_id " +
-                        "JOIN user_likes AS ul_2 ON f.film_id = ul_2.film_id " +
-                        "WHERE ul_1.user_id = ? AND ul_2.user_id = ?;";
+        String sql = "SELECT f.* " +
+                "FROM films AS f " +
+                "JOIN user_likes AS ul_1 ON f.film_id = ul_1.film_id " +
+                "JOIN user_likes AS ul_2 ON f.film_id = ul_2.film_id " +
+                "WHERE ul_1.user_id = ? AND ul_2.user_id = ?;";
         return jdbcTemplate.query(sql, this::makeFilm, userId, friendId);
     }
 
@@ -96,7 +86,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public List<Film> findAllByDirectorIdSorted(Long directorId, String sortBy) {
-        directorDbstorage.findById(directorId);
+        directorDbStorage.findById(directorId);
         String sql = "SELECT * FROM films " +
                 "JOIN director_to_film ON films.film_id = director_to_film.film_id " +
                 "WHERE director_to_film.director_id = ?";
@@ -154,7 +144,7 @@ public class FilmDbStorage implements FilmStorage {
                     userRows.getInt("duration"),
                     findMpaByCategoryId(userRows.getInt("category_id")),
                     new ArrayList<>(findGenresByFilmId(id)),
-                    new ArrayList<>(directorDbstorage.getFilmDirectors(id))
+                    new ArrayList<>(directorDbStorage.getFilmDirectors(id))
             );
             log.info("Найден фильм: {} {}", film.getId(), film.getName());
             return film;
@@ -183,27 +173,26 @@ public class FilmDbStorage implements FilmStorage {
         return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, id));
     }
 
-
-    /**
-     * Удаляет фильм из базы данных по его идентификатору.
-     *
-     * @param filmId Идентификатор фильма, который нужно удалить.
-     * @throws NotFoundException Если фильм с идентификатором filmId не существует.
-     */
     @Override
     public void deleteFilm(long filmId) {
-        getFilmById(filmId);
+        checkExists(filmId);
         String sql = "DELETE FROM films WHERE film_id = ?";
         jdbcTemplate.update(sql, filmId);
     }
 
-    /**
-     * Удаляет лайк пользователя к фильму.
-     *
-     * @param id     идентификатор фильма, для которого нужно удалить лайк.
-     * @param userId идентификатор пользователя, чей лайк нужно удалить.
-     * @return Film  возвращает объект фильма, для которого был удален лайк.
-     */
+    @Override
+    public void checkExists(long filmId) {
+        String sql = "select film_id from films where film_id = ?";
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, filmId);
+        long result = 0;
+        if (userRows.next()) {
+            result = userRows.getLong("film_id");
+        }
+        if (result == 0) {
+            throw new NotFoundException("Фильм с id = " + filmId + " не найден.");
+        }
+    }
+
     @Override
     public Film deleteLike(long id, long userId) {
         String sql = "DELETE FROM user_likes WHERE film_id = ? AND user_id = ?";
@@ -214,7 +203,6 @@ public class FilmDbStorage implements FilmStorage {
                 Operation.REMOVE,
                 id);
         eventDaoImpl.add(event);
-
         return getFilmById(id);
     }
 
@@ -248,7 +236,7 @@ public class FilmDbStorage implements FilmStorage {
                 rs.getInt("duration"),
                 findMpaByCategoryId(rs.getInt("category_id")),
                 new ArrayList<>(findGenresByFilmId(id)),
-                new ArrayList<>(directorDbstorage.getFilmDirectors(id))
+                new ArrayList<>(directorDbStorage.getFilmDirectors(id))
         );
     }
 
