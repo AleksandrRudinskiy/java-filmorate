@@ -31,5 +31,7 @@ public interface FilmStorage {
 
     List<Film> findAllByDirectorIdSorted(Long directorId, String sortBy);
 
+    void checkExists(long filmId);
+
 }
 

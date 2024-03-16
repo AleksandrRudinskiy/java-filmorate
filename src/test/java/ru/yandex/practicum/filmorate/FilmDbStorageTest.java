@@ -24,7 +24,6 @@ public class FilmDbStorageTest {
     @Test
     void testAddFilm() {
         Film newFilm = new Film(1L, "Some Film", "bla bla bla", LocalDate.of(2000, 12, 1), 98, new Mpa(1, "G"), new ArrayList<>(), new ArrayList<>());
-        //FilmDbStorage filmDbStorage = new FilmDbStorage(jdbcTemplate, directorDbstorage);
         filmDbStorage.add(newFilm);
         Assertions.assertEquals(1, filmDbStorage.getAllFilms().size(), "Количество фильмов должно быть 1!");
         assertThat(newFilm)
@@ -36,7 +35,6 @@ public class FilmDbStorageTest {
     @Test
     void testGetFilmById() {
         Film newFilm = new Film(2L, "Some Film", "bla bla bla", LocalDate.of(2000, 12, 1), 98, new Mpa(1, "G"), new ArrayList<>(), new ArrayList<>());
-        //FilmDbStorage filmDbStorage = new FilmDbStorage(jdbcTemplate, directorDbstorage);
         filmDbStorage.add(newFilm);
         Film film = filmDbStorage.getFilmById(newFilm.getId());
         assertThat(newFilm)

@@ -1,11 +1,14 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
@@ -22,45 +25,53 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReviewDaoImpl implements ReviewDao {
     private final NamedParameterJdbcOperations jdbcOperations;
+
+    private final JdbcTemplate jdbcTemplate;
     private final EventDao eventDaoImpl;
 
     @Override
-    public List<Review> getAll(Optional<Long> filmId, long count) {
+    public List<Review> getAll(long filmId, long count) {
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
+
         String sql = "SELECT r.review_id, " +
                 "r.content, " +
                 "r.is_positive, " +
                 "r.user_id, " +
                 "r.film_id, " +
-                "(SELECT COUNT(*) FILTER (WHERE rl.is_like) - COUNT(*) FILTER (WHERE NOT rl.is_like) " +
-                "FROM review_likes AS rl " +
-                "WHERE rl.review_id = r.review_id) AS useful " +
-                "FROM review AS r ";
-        if (filmId.isPresent()) {
-            sql += "WHERE r.film_id = :film_id ";
-            parameterSource.addValue("film_id", filmId.get());
+                "(COUNT(*) FILTER (WHERE rl.is_like) - COUNT(*) FILTER (WHERE NOT rl.is_like)) AS useful " +
+                "FROM review AS r " +
+                "LEFT JOIN review_likes AS rl ON rl.review_id = r.review_id " +
+                "GROUP by (r.review_id) ";
+        if (filmId != 0) {
+            sql += "HAVING r.film_id = :film_id ";
+            parameterSource.addValue("film_id", filmId);
         }
         sql += "ORDER BY useful DESC " +
                 "LIMIT :count";
-
         parameterSource.addValue("count", count);
         return jdbcOperations.query(sql, parameterSource, this::makeReview);
     }
 
     @Override
-    public Optional<Review> get(long id) {
+    public Review get(long id) {
         MapSqlParameterSource parameterSource = new MapSqlParameterSource("review_id", id);
         String sql = "SELECT r.review_id, " +
                 "r.content, " +
                 "r.is_positive, " +
                 "r.user_id, " +
                 "r.film_id, " +
-                "(SELECT COUNT(*) FILTER (WHERE rl.is_like) - COUNT(*) FILTER (WHERE NOT rl.is_like) " +
-                "FROM review_likes AS rl " +
-                "WHERE rl.review_id = r.review_id) AS useful " +
+                "(COUNT(*) FILTER (WHERE rl.is_like) - COUNT(*) FILTER (WHERE NOT rl.is_like)) AS useful " +
                 "FROM review AS r " +
-                "WHERE r.review_id = :review_id";
-        return jdbcOperations.query(sql, parameterSource, this::makeReview).stream().findFirst();
+                "LEFT JOIN review_likes AS rl ON rl.review_id = r.review_id " +
+                "GROUP by (r.review_id) " +
+                "HAVING r.film_id = :film_id ";
+        parameterSource.addValue("film_id", id);
+        Optional<Review> review = jdbcOperations.query(sql, parameterSource, this::makeReview).stream().findFirst();
+        if (review.isPresent()) {
+            return review.get();
+        } else {
+            throw new NotFoundException("Ревью с id = " + id + " не найдено.");
+        }
     }
 
     @Override
@@ -98,7 +109,7 @@ public class ReviewDaoImpl implements ReviewDao {
 
         jdbcOperations.update(sql, parameterSource);
 
-        Review updateReview = get(review.getReviewId()).get();
+        Review updateReview = get(review.getReviewId());
 
         eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
                 updateReview.getUserId(),
@@ -115,10 +126,10 @@ public class ReviewDaoImpl implements ReviewDao {
         String sql = "DELETE FROM review " +
                 "WHERE review_id = :review_id";
         eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
-                get(id).get().getUserId(),
+                get(id).getUserId(),
                 EventType.REVIEW,
                 Operation.REMOVE,
-                get(id).get().getReviewId())
+                get(id).getReviewId())
         );
         jdbcOperations.update(sql, parameterSource);
     }
@@ -171,14 +182,27 @@ public class ReviewDaoImpl implements ReviewDao {
         jdbcOperations.update(sql, parameterSource);
     }
 
+    @Override
+    public void checkExists(long id) {
+        String sql = "SELECT review_id FROM review WHERE review_id = ?";
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, id);
+        long result = 0;
+        if (userRows.next()) {
+            result = userRows.getLong("review_id");
+        }
+        if (result == 0) {
+            throw new NotFoundException("Отзыва с id = " + id + " не найдено.");
+        }
+    }
+
     private Review makeReview(ResultSet rs, int rowNum) throws SQLException {
-        return Review.builder()
-                .reviewId(rs.getLong("review_id"))
-                .content(rs.getString("content"))
-                .isPositive(rs.getBoolean("is_positive"))
-                .userId(rs.getLong("user_id"))
-                .filmId(rs.getLong("film_id"))
-                .useful(rs.getInt(6))
-                .build();
+        return new Review(
+                rs.getLong("review_id"),
+                rs.getString("content"),
+                rs.getBoolean("is_positive"),
+                rs.getLong("user_id"),
+                rs.getLong("film_id"),
+                rs.getInt(6)
+        );
     }
 }

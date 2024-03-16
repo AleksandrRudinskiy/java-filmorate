@@ -121,12 +121,15 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<Film> getRecommendations(long id) {
-        //TODO
         return null;
     }
 
     @Override
     public List<Event> getFeed(long userId) {
         return null;
+    }
+
+    @Override
+    public void checkExists(long id) {
     }
 }

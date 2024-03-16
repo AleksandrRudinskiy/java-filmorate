@@ -10,7 +10,6 @@ import java.util.Map;
 
 @AllArgsConstructor
 @Data
-
 public class Event {
     @EqualsAndHashCode.Exclude
     private long timestamp;

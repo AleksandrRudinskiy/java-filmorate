@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
@@ -27,11 +26,11 @@ public class FilmController {
     }
 
     @GetMapping("/films/director/{directorId}")
-    public ResponseEntity<List<Film>> getFilmsByDirectorSorted(
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getFilmsByDirectorSorted(
             @PathVariable long directorId,
             @RequestParam(required = false, defaultValue = "likes") String sortBy) {
-        List<Film> films = filmService.findAllByDirectorIdSorted(directorId, sortBy);
-        return ResponseEntity.ok(films);
+        return filmService.findAllByDirectorIdSorted(directorId, sortBy);
     }
 
     @GetMapping("/films/popular")
@@ -97,12 +96,6 @@ public class FilmController {
     @ResponseStatus(HttpStatus.OK)
     public List<Film> search(@RequestParam String query, @RequestParam String by) {
         log.info("GET-Запрос на поиск фильма. Query = {}, by = {}", query, by);
-        return filmService.getFilms().stream()
-                .filter(f -> ((by.toLowerCase().contains("title") && f.getDescription().toLowerCase().contains(query.toLowerCase()))
-                                || (by.toLowerCase().contains("director") && f.getDirectors().stream().anyMatch(d -> d.getName().toLowerCase().contains(query.toLowerCase())))
-                        )
-                )
-                .sorted((f1, f2) -> filmService.getLikes(f2.getId()).size() - filmService.getLikes(f1.getId()).size())
-                .collect(Collectors.toList());
+        return filmService.search(query, by);
     }
 }

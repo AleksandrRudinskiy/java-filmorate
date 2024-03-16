@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.dao.DirectorDao;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,22 +30,17 @@ public class DirectorService {
 
     @Transactional
     public List<Director> executeAddDirectorListToFilm(long filmId, List<Director> directors) {
-        return Optional.ofNullable(directors)
-                .orElseGet(Collections::emptyList)
-                .stream()
-                .map(director -> executeAddDirectorToFilm(filmId, director.getId()))
+        if (directors == null || directors.isEmpty()) {
+            return Collections.emptyList();
+        }
+        //Формируем список Режиссёров
+        List<Long> directorIds = directors.stream()
+                .map(Director::getId)
                 .collect(Collectors.toList());
-    }
-
-    @Transactional
-    private Director executeAddDirectorToFilm(long filmId, long directorId) {
-        return directorDao.findById(directorId).map(director -> {
-            directorDao.addFilmDirector(filmId, directorId);
-            return director;
-        }).orElseThrow(() -> {
-            log.error("Director with id {} does not exist", directorId);
-            return new NotFoundException("Не удалось добавить режиссера для фильма");
-        });
+        //Делаем batchUpdate
+        directorDao.addFilmDirectorsBatch(filmId, directorIds);
+        // Возвращаем обновленный список режиссеров для фильма
+        return getFilmDirectors(filmId);
     }
 
     public List<Director> getDirectors() {
@@ -55,8 +48,8 @@ public class DirectorService {
     }
 
     public Director getDirectorById(long id) {
-        return directorDao.findById(id)
-                .orElseThrow(() -> new NotFoundException("Режисер с идентификатором " + id + " не найден."));
+        directorDao.checkExists(id);
+        return directorDao.findById(id);
     }
 
     @Transactional
@@ -70,11 +63,8 @@ public class DirectorService {
 
     @Transactional
     public void deleteDirector(long id) {
-        if (directorDao.findById(id).isPresent()) {
-            directorDao.deleteDirector(id);
-        } else {
-            throw new NotFoundException("Режисер с идентификатором " + id + " не найден.");
-        }
+        directorDao.checkExists(id);
+        directorDao.deleteDirector(id);
     }
 
     public void deleteFilmDirector(long filmId, long directorId) {
