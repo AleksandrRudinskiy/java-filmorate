@@ -27,21 +27,13 @@ public class UserService {
     }
 
     public User update(User user) {
-        if (user.getName().isEmpty() || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        if (userStorage.isAlreadyExists(user.getId())) {
-            return userStorage.update(user);
-        } else if (!userStorage.isAlreadyExists(user.getId()) && (user.getId() != 0)) {
-            throw new NotFoundException("Пользователя с id = " + user.getId() + " нет.");
-        } else {
-            return userStorage.add(user);
-        }
+        userStorage.checkExists(user.getId());
+        return userStorage.update(user);
     }
 
     public User addFriend(long id, long friendId) {
-        userStorage.isAlreadyExists(id);
-        userStorage.isAlreadyExists(friendId);
+        userStorage.checkExists(id);
+        userStorage.checkExists(friendId);
         return userStorage.addFriend(id, friendId);
     }
 
@@ -56,11 +48,8 @@ public class UserService {
     }
 
     public User getUserById(long id) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
-            throw new NotFoundException("Пользователя с id " + id + "нет");
-        }
-        return user;
+        userStorage.checkExists(id);
+        return userStorage.getUserById(id);
     }
 
     public List<User> getUsersFriends(long id) {
@@ -70,7 +59,6 @@ public class UserService {
         }
         return userStorage.getUsersFriends(id);
     }
-
 
     public void deleteUser(long userId) {
         userStorage.deleteUser(userId);
@@ -93,6 +81,9 @@ public class UserService {
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Date of birth cannot be in the future");
+        }
+        if (user.getName().isEmpty() || user.getName().isBlank()) {
+            user.setName(user.getLogin());
         }
     }
 }
