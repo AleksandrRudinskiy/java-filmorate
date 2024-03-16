@@ -25,14 +25,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReviewDaoImpl implements ReviewDao {
     private final NamedParameterJdbcOperations jdbcOperations;
-
     private final JdbcTemplate jdbcTemplate;
     private final EventDao eventDaoImpl;
 
     @Override
     public List<Review> getAll(long filmId, long count) {
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
-
         String sql = "SELECT r.review_id, " +
                 "r.content, " +
                 "r.is_positive, " +
@@ -86,7 +84,6 @@ public class ReviewDaoImpl implements ReviewDao {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcOperations.update(sql, parameterSource, keyHolder);
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
-
         eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
                 review.getUserId(),
                 EventType.REVIEW,
@@ -105,12 +102,8 @@ public class ReviewDaoImpl implements ReviewDao {
         parameterSource.addValue("review_id", review.getReviewId());
         parameterSource.addValue("content", review.getContent());
         parameterSource.addValue("is_positive", review.getIsPositive());
-
-
         jdbcOperations.update(sql, parameterSource);
-
         Review updateReview = get(review.getReviewId());
-
         eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
                 updateReview.getUserId(),
                 EventType.REVIEW,
