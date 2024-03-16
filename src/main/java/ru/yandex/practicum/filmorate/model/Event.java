@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -11,12 +10,10 @@ import java.util.Map;
 @AllArgsConstructor
 @Data
 public class Event {
-    @EqualsAndHashCode.Exclude
     private long timestamp;
     private long userId;
     private EventType eventType;
     private Operation operation;
-    @EqualsAndHashCode.Exclude
     private long eventId;
     private long entityId;
 
@@ -36,7 +33,6 @@ public class Event {
         values.put("operation", operation);
         values.put("entity_id", entityId);
         return values;
-
     }
 
 }

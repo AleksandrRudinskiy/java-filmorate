@@ -42,10 +42,7 @@ public class UserService {
     public User addFriend(long id, long friendId) {
         userStorage.isAlreadyExists(id);
         userStorage.isAlreadyExists(friendId);
-        User user = userStorage.addFriend(id, friendId);
-
-
-        return user;
+        return userStorage.addFriend(id, friendId);
     }
 
     public User deleteFriend(long id, long friendId) {

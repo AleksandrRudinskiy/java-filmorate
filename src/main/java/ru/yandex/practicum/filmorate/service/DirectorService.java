@@ -33,13 +33,10 @@ public class DirectorService {
         if (directors == null || directors.isEmpty()) {
             return Collections.emptyList();
         }
-        //Формируем список Режиссёров
         List<Long> directorIds = directors.stream()
                 .map(Director::getId)
                 .collect(Collectors.toList());
-        //Делаем batchUpdate
         directorDao.addFilmDirectorsBatch(filmId, directorIds);
-        // Возвращаем обновленный список режиссеров для фильма
         return getFilmDirectors(filmId);
     }
 

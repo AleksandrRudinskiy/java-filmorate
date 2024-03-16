@@ -91,7 +91,6 @@ public class FilmDbStorage implements FilmStorage {
                 "likes", "(SELECT COUNT(user_id) FROM user_likes WHERE film_id = films.film_id) DESC",
                 "year", "films.release_date"
         );
-
         String sql = "SELECT * FROM films " +
                 "JOIN director_to_film ON films.film_id = director_to_film.film_id " +
                 "WHERE director_to_film.director_id = ?";
@@ -185,7 +184,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void checkExists(long filmId) {
-        String sql = "select film_id from films where film_id = ?";
+        String sql = "SELECT film_id FROM films WHERE film_id = ?";
         SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, filmId);
         long result = 0;
         if (userRows.next()) {

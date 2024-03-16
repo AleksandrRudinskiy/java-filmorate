@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-@Getter
 @AllArgsConstructor
 public class Review {
     private Long reviewId;

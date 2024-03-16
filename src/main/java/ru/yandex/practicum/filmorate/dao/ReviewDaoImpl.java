@@ -116,8 +116,7 @@ public class ReviewDaoImpl implements ReviewDao {
     @Override
     public void delete(long id) {
         MapSqlParameterSource parameterSource = new MapSqlParameterSource("review_id", id);
-        String sql = "DELETE FROM review " +
-                "WHERE review_id = :review_id";
+        String sql = "DELETE FROM review WHERE review_id = :review_id";
         eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
                 get(id).getUserId(),
                 EventType.REVIEW,
