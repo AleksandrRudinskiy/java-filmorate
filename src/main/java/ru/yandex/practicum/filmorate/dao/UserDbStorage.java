@@ -8,12 +8,15 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Primary
 @Component
@@ -21,6 +24,8 @@ import java.util.*;
 @AllArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final FilmStorage filmStorage;
+    private final EventDao eventDaoImpl;
 
     @Override
     public User add(User user) {
@@ -54,16 +59,6 @@ public class UserDbStorage implements UserStorage {
         List<User> users1 = new ArrayList<>(userMap.values());
         users1.forEach(u -> u.setFriends(userFriends.get(u.getId())));
         return users1;
-    }
-
-    private User makeUser(ResultSet rs) throws SQLException {
-        return new User(
-                rs.getLong("user_id"),
-                rs.getString("name"),
-                rs.getString("email"),
-                rs.getString("login"),
-                Objects.requireNonNull(rs.getDate("birthday")).toLocalDate()
-        );
     }
 
     @Override
@@ -105,6 +100,12 @@ public class UserDbStorage implements UserStorage {
     public User addFriend(long id, long friendId) {
         String sql = "insert into user_friends values (?, ?, false)";
         jdbcTemplate.update(sql, id, friendId);
+        Event event = new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                id,
+                EventType.FRIEND,
+                Operation.ADD,
+                friendId);
+        eventDaoImpl.add(event);
         return getUserById(id);
     }
 
@@ -112,7 +113,26 @@ public class UserDbStorage implements UserStorage {
     public User deleteFriend(long id, long friendId) {
         String sql = "delete from user_friends where user_id  = ? and friend_id = ?";
         jdbcTemplate.update(sql, id, friendId);
+        eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                id,
+                EventType.FRIEND,
+                Operation.REMOVE,
+                friendId)
+        );
         return getUserById(id);
+    }
+
+    /**
+     * Удаляет пользователя из базы данных на основе их уникального идентификатора.
+     *
+     * @param userId Уникальный идентификатор пользователя, которого нужно удалить.
+     * @throws NotFoundException Если пользователь с идентификатором не существует.
+     */
+    @Override
+    public void deleteUser(long userId) {
+        getUserById(userId);
+        String sql = "DELETE FROM users WHERE user_id = ?";
+        jdbcTemplate.update(sql, userId);
     }
 
     private List<Long> findFriendsByUserId(long userId) {
@@ -136,5 +156,110 @@ public class UserDbStorage implements UserStorage {
                 "(select friend_id from user_friends where user_id = ?) as tt \n" +
                 "inner  join (select friend_id from user_friends where user_id = ?) uf on uf.friend_id = tt.friend_id)";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id, otherId);
+    }
+
+    /**
+     * Метод для получения рекомендаций фильмов для пользователя.
+     *
+     * @param id идентификатор пользователя, для которого требуются рекомендации.
+     * @return Список рекомендованных фильмов. Если нет подходящих рекомендаций, возвращает пустой список.
+     * @throws NotFoundException выбрасывает исключение при неверно переданном идентификаторе.
+     *
+     *                           <p>Этот метод работает следующим образом:
+     *                           <ul>
+     *                           <li>Сначала он получает список фильмов, которые понравились каждому пользователю.</li>
+     *                           <li>Затем он находит пользователя с наибольшим количеством общих предпочтений с целевым пользователем.</li>
+     *                           <li>Наконец, он возвращает список фильмов, которые понравились этому пользователю, но которые целевой пользователь еще не видел.</li>
+     *                           </ul>
+     */
+
+    public List<Film> getRecommendations(long id) {
+        checkExists(id);
+        Map<Long, List<Long>> usersLikes = new HashMap<>();
+        String sql = "SELECT * FROM user_likes";
+        SqlRowSet srs = jdbcTemplate.queryForRowSet(sql);
+        while (srs.next()) {
+            Long userId = srs.getLong("user_id");
+            Long filmId = srs.getLong("film_id");
+            if (!usersLikes.containsKey(userId)) {
+                usersLikes.put(userId, new ArrayList<>());
+            }
+            usersLikes.get(userId).add(filmId);
+        }
+        List<Long> thisUserLikes = usersLikes.get(id);
+        usersLikes.remove(id);
+        Long userIdSecond = -1L;
+        long maxCountIntersections = -1L;
+        for (Long userId : usersLikes.keySet()) {
+            Long countIntersections = findIntersectionsTwoSets(thisUserLikes, usersLikes.get(userId));
+            if (maxCountIntersections < countIntersections) {
+                maxCountIntersections = countIntersections;
+                userIdSecond = userId;
+            }
+        }
+        if (userIdSecond < 1) {
+            return new ArrayList<>();
+        }
+        List<Long> otherUserLikes = usersLikes.get(userIdSecond);
+        log.info(otherUserLikes.toString());
+        log.info(thisUserLikes.toString());
+        otherUserLikes.removeAll(thisUserLikes);
+
+        return otherUserLikes.stream()
+                .map(filmStorage::getFilmById)
+                .collect(Collectors.toList());
+    }
+
+    public List<Event> getFeed(long userId) {
+        String sql = "SELECT * FROM events WHERE user_id = ?";
+        getUserById(userId);
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeEvent(rs), userId);
+    }
+
+    /**
+     * Находит количество элементов в пересечении двух множеств.
+     *
+     * @param listOne    Первое множество в виде списка.
+     * @param listSecond Второе множество в виде списка.
+     * @return Количество элементов в пересечении множеств.
+     */
+    private Long findIntersectionsTwoSets(List<Long> listOne, List<Long> listSecond) {
+        Set<Long> setOne = new HashSet<>(listOne);
+        Set<Long> setSecond = new HashSet<>(listSecond);
+        setOne.retainAll(setSecond);
+        return (long) setOne.size();
+    }
+
+    private User makeUser(ResultSet rs) throws SQLException {
+        return new User(
+                rs.getLong("user_id"),
+                rs.getString("name"),
+                rs.getString("email"),
+                rs.getString("login"),
+                Objects.requireNonNull(rs.getDate("birthday")).toLocalDate()
+        );
+    }
+
+    @Override
+    public void checkExists(long id) {
+        String sql = "SELECT user_id FROM users WHERE user_id = ?";
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, id);
+        long result = 0;
+        if (userRows.next()) {
+            result = userRows.getLong("user_id");
+        }
+        if (result == 0) {
+            throw new NotFoundException("Пользоватея с id = " + id + " не найдено.");
+        }
+    }
+
+    private Event makeEvent(ResultSet rs) throws SQLException {
+        return new Event(rs.getTimestamp("time_stamp").getTime(),
+                rs.getLong("user_id"),
+                EventType.valueOf(rs.getString("event_type")),
+                Operation.valueOf(rs.getString("operation")),
+                rs.getLong("event_id"),
+                rs.getLong("entity_id")
+        );
     }
 }

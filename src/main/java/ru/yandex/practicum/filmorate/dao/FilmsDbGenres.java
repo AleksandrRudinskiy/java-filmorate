@@ -4,8 +4,8 @@ import lombok.Getter;
 
 @Getter
 public class FilmsDbGenres {
-    private long filmId;
-    private Integer genreId;
+    private final long filmId;
+    private final Integer genreId;
 
     public FilmsDbGenres(long filmId, Integer genreId) {
         this.filmId = filmId;

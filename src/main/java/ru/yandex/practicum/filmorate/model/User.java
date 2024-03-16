@@ -20,6 +20,14 @@ public class User {
     private LocalDate birthday;
     private Set<Long> friends = new HashSet<>();
 
+    public User(long id, String name, String email, String login, LocalDate birthday) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.login = login;
+        this.birthday = birthday;
+    }
+
     public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();
         values.put("name", name);
@@ -27,13 +35,5 @@ public class User {
         values.put("login", login);
         values.put("birthday", birthday);
         return values;
-    }
-
-    public User(long id, String name, String email, String login, LocalDate birthday) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.login = login;
-        this.birthday = birthday;
     }
 }
