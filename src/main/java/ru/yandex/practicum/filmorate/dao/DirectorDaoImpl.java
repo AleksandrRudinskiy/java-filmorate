@@ -117,6 +117,13 @@ public class DirectorDaoImpl implements DirectorDao {
 
     @Override
     public boolean doAllDirectorsExist(List<Long> directorIds) {
+//        int count = 0;
+//        for (Long directorId : directorIds) {
+//            checkExists(directorId);
+//            count++;
+//        }
+//        return count == directorIds.size();
+
         String sql = "SELECT COUNT(*) FROM DIRECTOR WHERE DIRECTOR_ID IN (:ids)";
         Map<String, List<Long>> params = Collections.singletonMap("ids", directorIds);
         int count = namedParameterJdbcTemplate.queryForObject(sql, params, Integer.class);
@@ -125,13 +132,10 @@ public class DirectorDaoImpl implements DirectorDao {
 
     @Override
     public void addFilmDirectorsBatch(long filmId, List<Long> directorIds) {
-        //Проверка существования режиссёров
         if (!doAllDirectorsExist(directorIds)) {
             throw new NotFoundException("addFilmDirectorsBatch : one or more directors do not exist");
         }
-        //Готовим запрос
         String sql = "INSERT INTO DIRECTOR_TO_FILM (FILM_ID, DIRECTOR_ID) VALUES (:filmId, :directorId)";
-        //Готовим список мап batchValues. Для каждого directorId из directorIds делаем мапу filmId - directorId
         List<Map<String, ?>> batchValues = new ArrayList<>();
         for (Long directorId : directorIds) {
             batchValues.add(
@@ -141,7 +145,6 @@ public class DirectorDaoImpl implements DirectorDao {
                             .getValues()
             );
         }
-        //Вставляем все собранные мапы из списка batchValues
         namedParameterJdbcTemplate.batchUpdate(sql, batchValues.toArray(new Map[directorIds.size()]));
     }
 }

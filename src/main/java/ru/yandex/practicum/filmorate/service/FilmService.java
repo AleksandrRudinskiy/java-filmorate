@@ -73,31 +73,19 @@ public class FilmService {
     public void add(Film film) {
         validateFilm(film);
         filmStorage.add(film);
-
-        List<Director> filmDirecors = directorService.executeAddDirectorListToFilm(film.getId(), film.getDirectors());
-        film.setDirectors(filmDirecors);
+        List<Director> filmDirectors = directorService.executeAddDirectorListToFilm(film.getId(), film.getDirectors());
+        film.setDirectors(filmDirectors);
     }
 
     public Film update(Film film) {
-        if (getFilmById(film.getId()) == null) {
-            throw new NotFoundException("film с id = " + film.getId() + " не найден");
-        }
-        if (filmStorage.isAlreadyExists(film.getId())) {
-            List<Director> filmDirectors = directorService.executeAddDirectorListToFilm(film.getId(), film.getDirectors());
-            List<Director> currentFilmDirectors = directorService.getFilmDirectors(film.getId());
-            for (Director current : currentFilmDirectors) {
-                if (!filmDirectors.contains(current)) {
-                    directorService.deleteFilmDirector(film.getId(), current.getId());
-                }
-            }
-
-            film.setDirectors(filmDirectors);
-            return filmStorage.update(film);
-        } else if (!filmStorage.isAlreadyExists(film.getId()) && (film.getId() != 0)) {
-            throw new RuntimeException();
-        } else {
-            return filmStorage.add(film);
-        }
+        filmStorage.checkExists(film.getId());
+        List<Director> filmDirectors = directorService.executeAddDirectorListToFilm(film.getId(), film.getDirectors());
+        List<Director> currentFilmDirectors = directorService.getFilmDirectors(film.getId());
+        currentFilmDirectors.stream()
+                .filter(c -> !filmDirectors.contains(c))
+                .forEach(c -> directorService.deleteFilmDirector(film.getId(), c.getId()));
+        film.setDirectors(filmDirectors);
+        return filmStorage.update(film);
     }
 
     public List<Film> findAllByDirectorIdSorted(Long directorId, String sortBy) {

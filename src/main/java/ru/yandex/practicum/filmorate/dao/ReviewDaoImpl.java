@@ -84,11 +84,11 @@ public class ReviewDaoImpl implements ReviewDao {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcOperations.update(sql, parameterSource, keyHolder);
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
-        eventDaoImpl.add(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
-                review.getUserId(),
-                EventType.REVIEW,
-                Operation.ADD,
-                review.getReviewId()));
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        Event event = new Event(timestamp.getTime(), review.getUserId(), EventType.REVIEW, Operation.ADD,
+                review.getReviewId()
+        );
+        eventDaoImpl.add(event);
         return review;
     }
 

@@ -42,35 +42,30 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getUsers() {
-        String sql = "select distinct u.user_id, u.name , u.email , u.login , u.birthday , uf.friend_id from users u left join user_friends uf on u.user_id = uf.user_id";
+        String sql = "SELECT DISTINCT u.user_id, u.name , u.email , u.login , u.birthday , uf.friend_id from users u " +
+                "LEFT JOIN user_friends uf on u.user_id = uf.user_id";
         List<User> users = jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
         Map<Long, User> userMap = new HashMap<>();
-        for (User user : users) {
-            userMap.put(user.getId(), user);
-        }
-        List<UserDbFriends> userDbFriends = jdbcTemplate.query(sql, (rs, rowNum) -> new UserDbFriends(rs.getLong("user_id"), rs.getLong("friend_id")));
+        users.forEach(u -> userMap.put(u.getId(), u));
+        List<UserDbFriends> userDbFriends = jdbcTemplate.query(sql, (rs, rowNum) -> makeUserDbFriends(rs));
         Map<Long, Set<Long>> userFriends = new HashMap<>();
-        for (UserDbFriends userDbFriend : userDbFriends) {
-            userFriends.put(userDbFriend.getUserId(), new HashSet<>());
-            if (userFriends.containsKey(userDbFriend.getUserId()) && userDbFriend.getFriendId() != 0) {
-                userFriends.get(userDbFriend.getUserId()).add(userDbFriend.getFriendId());
+        userDbFriends.forEach(u -> {
+            userFriends.put(u.getUserId(), new HashSet<>());
+            if (userFriends.containsKey(u.getUserId()) && u.getFriendId() != 0) {
+                userFriends.get(u.getUserId()).add(u.getFriendId());
             }
-        }
+        });
         List<User> users1 = new ArrayList<>(userMap.values());
         users1.forEach(u -> u.setFriends(userFriends.get(u.getId())));
         return users1;
     }
 
-    @Override
-    public boolean isAlreadyExists(long id) {
-        return getUserById(id) != null;
+    private UserDbFriends makeUserDbFriends(ResultSet rs) throws SQLException {
+        return new UserDbFriends(rs.getLong("user_id"), rs.getLong("friend_id"));
     }
 
     @Override
     public User update(User user) {
-        if (user.getName().isEmpty() || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
         String sql = "update users set name = ?, email = ?, login = ?, birthday = ? where user_id = ? ";
         jdbcTemplate.update(sql, user.getName(), user.getEmail(), user.getLogin(), user.getBirthday(), user.getId());
         return getUserById(user.getId());
@@ -78,9 +73,11 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User getUserById(long id) {
+        checkExists(id);
         SqlRowSet userRows = jdbcTemplate.queryForRowSet("select * from users where user_id = ?", id);
+        User user = null;
         if (userRows.next()) {
-            User user = new User(
+            user = new User(
                     userRows.getLong("user_id"),
                     userRows.getString("name"),
                     userRows.getString("email"),
@@ -89,11 +86,8 @@ public class UserDbStorage implements UserStorage {
             );
             user.setFriends(new HashSet<>(findFriendsByUserId(id)));
             log.info("Найден пользователь: {} {}", user.getId(), user.getName());
-            return user;
-        } else {
-            log.info("Пользователь с идентификатором {} не найден.", id);
-            throw new NotFoundException("Пользователь с id = " + id + " не найден.");
         }
+        return user;
     }
 
     @Override
@@ -130,13 +124,13 @@ public class UserDbStorage implements UserStorage {
      */
     @Override
     public void deleteUser(long userId) {
-        getUserById(userId);
+        checkExists(userId);
         String sql = "DELETE FROM users WHERE user_id = ?";
         jdbcTemplate.update(sql, userId);
     }
 
     private List<Long> findFriendsByUserId(long userId) {
-        String sql = "select friend_id from user_friends where user_id = ? order by friend_id";
+        String sql = "SELECT friend_id FROM user_friends WHERE user_id = ? ORDER BY friend_id";
         return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("friend_id"), userId);
     }
 
@@ -148,12 +142,12 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(long id, long otherId) {
-        isAlreadyExists(id);
-        isAlreadyExists(otherId);
-        String sql = "select * from users \n" +
-                "where user_id = \n" +
-                "(select  uf.friend_id from \n" +
-                "(select friend_id from user_friends where user_id = ?) as tt \n" +
+        checkExists(id);
+        checkExists(otherId);
+        String sql = "select * from users " +
+                "where user_id = " +
+                "(select  uf.friend_id from " +
+                "(select friend_id from user_friends where user_id = ?) as tt " +
                 "inner  join (select friend_id from user_friends where user_id = ?) uf on uf.friend_id = tt.friend_id)";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id, otherId);
     }
@@ -216,6 +210,19 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeEvent(rs), userId);
     }
 
+    @Override
+    public void checkExists(long id) {
+        String sql = "SELECT user_id FROM users WHERE user_id = ?";
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, id);
+        long result = 0;
+        if (userRows.next()) {
+            result = userRows.getLong("user_id");
+        }
+        if (result == 0) {
+            throw new NotFoundException("Пользоватея с id = " + id + " не найдено.");
+        }
+    }
+
     /**
      * Находит количество элементов в пересечении двух множеств.
      *
@@ -238,19 +245,6 @@ public class UserDbStorage implements UserStorage {
                 rs.getString("login"),
                 Objects.requireNonNull(rs.getDate("birthday")).toLocalDate()
         );
-    }
-
-    @Override
-    public void checkExists(long id) {
-        String sql = "SELECT user_id FROM users WHERE user_id = ?";
-        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, id);
-        long result = 0;
-        if (userRows.next()) {
-            result = userRows.getLong("user_id");
-        }
-        if (result == 0) {
-            throw new NotFoundException("Пользоватея с id = " + id + " не найдено.");
-        }
     }
 
     private Event makeEvent(ResultSet rs) throws SQLException {

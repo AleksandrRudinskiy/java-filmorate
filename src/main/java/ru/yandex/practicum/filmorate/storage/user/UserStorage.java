@@ -12,8 +12,6 @@ public interface UserStorage {
 
     List<User> getUsers();
 
-    boolean isAlreadyExists(long id);
-
     User update(User user);
 
     User getUserById(long id);

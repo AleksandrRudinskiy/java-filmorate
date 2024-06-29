@@ -13,12 +13,10 @@ public class EventDaoImpl implements EventDao {
 
     @Override
     public void add(Event event) {
-
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("events")
                 .usingGeneratedKeyColumns("event_id");
         long eventId = simpleJdbcInsert.executeAndReturnKey(event.toMap()).longValue();
         event.setEventId(eventId);
     }
-
 }

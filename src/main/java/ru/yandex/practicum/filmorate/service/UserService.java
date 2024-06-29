@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -28,6 +27,7 @@ public class UserService {
 
     public User update(User user) {
         userStorage.checkExists(user.getId());
+        validateUser(user);
         return userStorage.update(user);
     }
 
@@ -42,8 +42,8 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
-        userStorage.isAlreadyExists(id);
-        userStorage.isAlreadyExists(otherId);
+        userStorage.checkExists(id);
+        userStorage.checkExists(otherId);
         return userStorage.getCommonFriends(id, otherId);
     }
 
@@ -53,10 +53,7 @@ public class UserService {
     }
 
     public List<User> getUsersFriends(long id) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
-            throw new NotFoundException("Пользователя с id = " + id + " нет.");
-        }
+        userStorage.checkExists(id);
         return userStorage.getUsersFriends(id);
     }
 
