@@ -1,3 +1,5 @@
+DELETE FROM category;
+
 INSERT INTO category VALUES (1, 'G');
 
 INSERT INTO category VALUES (2, 'PG');
@@ -8,6 +10,7 @@ INSERT INTO category VALUES (4, 'R');
 
 INSERT INTO category VALUES (5, 'NC-17');
 
+DELETE FROM genre;
 
 INSERT INTO genre VALUES (1, 'Комедия');
 

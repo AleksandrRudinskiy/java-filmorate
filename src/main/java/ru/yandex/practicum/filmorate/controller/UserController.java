@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -44,6 +46,13 @@ public class UserController {
                 .body(userService.getUserById(userId));
     }
 
+    @GetMapping("/users/{id}/recommendations")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getRecommendations(@PathVariable long id) {
+        log.info("GET-запрос на получение рекомендованных к просмотру фильмов.");
+        return userService.getRecommendations(id);
+    }
+
     @PostMapping(value = "/users")
     public User createUser(@Valid @RequestBody User user) {
         log.info("POST-Запрос на добавление пользователя.");
@@ -70,5 +79,18 @@ public class UserController {
         log.info("DELETE-Удаление пользователя friendId = {} из друзей пользователя id = {}.", friendId, id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(userService.deleteFriend(id, friendId));
+    }
+
+    @DeleteMapping("/users/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteUser(@PathVariable long userId) {
+        log.info("DELETE-Запрос на удаление пользователя и связанных с ним данных.");
+        userService.deleteUser(userId);
+    }
+
+    @GetMapping("/users/{id}/feed")
+    public List<Event> getFeed(@PathVariable long id) {
+        log.info("GET-Запрос на получение ленты событий пользователя с id = {}.", id);
+        return userService.getFeed(id);
     }
 }

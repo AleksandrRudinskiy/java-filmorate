@@ -3,9 +3,12 @@
 ## Канбан-доска
 https://miro.com/app/board/uXjVNkkgjAk=/
 
-## ER-диаграмма
+## ER-диаграмма java-filmorate
+
 ![ER](ER-schema-java-filmorate1.png)
+
 ## Примеры запросов
+
 ### Получение N наиболее популярных фильмов
 
 ```

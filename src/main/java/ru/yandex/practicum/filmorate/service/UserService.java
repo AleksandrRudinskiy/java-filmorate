@@ -2,8 +2,9 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -25,21 +26,14 @@ public class UserService {
     }
 
     public User update(User user) {
-        if (user.getName().isEmpty() || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        if (userStorage.isAlreadyExists(user.getId())) {
-            return userStorage.update(user);
-        } else if (!userStorage.isAlreadyExists(user.getId()) && (user.getId() != 0)) {
-            throw new NotFoundException("Пользователя с id = " + user.getId() + " нет.");
-        } else {
-            return userStorage.add(user);
-        }
+        userStorage.checkExists(user.getId());
+        validateUser(user);
+        return userStorage.update(user);
     }
 
     public User addFriend(long id, long friendId) {
-        userStorage.isAlreadyExists(id);
-        userStorage.isAlreadyExists(friendId);
+        userStorage.checkExists(id);
+        userStorage.checkExists(friendId);
         return userStorage.addFriend(id, friendId);
     }
 
@@ -48,25 +42,31 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
-        userStorage.isAlreadyExists(id);
-        userStorage.isAlreadyExists(otherId);
+        userStorage.checkExists(id);
+        userStorage.checkExists(otherId);
         return userStorage.getCommonFriends(id, otherId);
     }
 
     public User getUserById(long id) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
-            throw new NotFoundException("Пользователя с id " + id + "нет");
-        }
-        return user;
+        userStorage.checkExists(id);
+        return userStorage.getUserById(id);
     }
 
     public List<User> getUsersFriends(long id) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
-            throw new NotFoundException("Пользователя с id = " + id + " нет.");
-        }
+        userStorage.checkExists(id);
         return userStorage.getUsersFriends(id);
+    }
+
+    public void deleteUser(long userId) {
+        userStorage.deleteUser(userId);
+    }
+
+    public List<Film> getRecommendations(long id) {
+        return userStorage.getRecommendations(id);
+    }
+
+    public List<Event> getFeed(long userId) {
+        return userStorage.getFeed(userId);
     }
 
     private void validateUser(User user) {
@@ -78,6 +78,9 @@ public class UserService {
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Date of birth cannot be in the future");
+        }
+        if (user.getName().isEmpty() || user.getName().isBlank()) {
+            user.setName(user.getLogin());
         }
     }
 }

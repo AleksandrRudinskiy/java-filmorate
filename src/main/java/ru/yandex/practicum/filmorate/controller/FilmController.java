@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @Slf4j
-@Getter
 @AllArgsConstructor
 public class FilmController {
     private final FilmService filmService;
@@ -26,17 +25,34 @@ public class FilmController {
         return films;
     }
 
+    @GetMapping("/films/director/{directorId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getFilmsByDirectorSorted(
+            @PathVariable long directorId,
+            @RequestParam(required = false, defaultValue = "likes") String sortBy) {
+        return filmService.findAllByDirectorIdSorted(directorId, sortBy);
+    }
+
     @GetMapping("/films/popular")
-    public List<Film> findBestFilms(
-            @RequestParam(defaultValue = "10", required = false) Integer count) {
+    public List<Film> getBestFilms(
+            @RequestParam(defaultValue = "0", required = false) int genreId,
+            @RequestParam(defaultValue = "0", required = false) int year,
+            @RequestParam(defaultValue = "10", required = false) int count) {
         log.info("GET-Запрос на получение топ-списка {} фильмов.", count);
-        return filmService.getBestFilms(count);
+        return filmService.getBestFilms(genreId, year, count);
     }
 
     @GetMapping("/films/{filmId}")
     public ResponseEntity<Film> getFilmById(@PathVariable int filmId) {
         log.info("GET-Запрос на получение фильма по id = {}.", filmId);
         return ResponseEntity.status(HttpStatus.OK).body(filmService.getFilmById(filmId));
+    }
+
+    @GetMapping(value = "/films/common", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getCommonFilms(@RequestParam int userId, @RequestParam int friendId) {
+        log.info("GET-Запрос на получение общих фильмов двух пользователей.");
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     @PostMapping(value = "/films")
@@ -67,5 +83,19 @@ public class FilmController {
         log.info("DELETE-Запрос на удаление лайка фильма с filmId = {} от пользователя с userId = {}.", filmId, userId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(filmService.deleteLike(filmId, userId));
+    }
+
+    @DeleteMapping("/films/{filmId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteFilm(@PathVariable long filmId) {
+        log.info("DELETE-Запрос на удаление фильма и всех связанных с ним данных.");
+        filmService.deleteFilm(filmId);
+    }
+
+    @GetMapping(value = "/films/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> search(@RequestParam String query, @RequestParam String by) {
+        log.info("GET-Запрос на поиск фильма. Query = {}, by = {}", query, by);
+        return filmService.search(query, by);
     }
 }
